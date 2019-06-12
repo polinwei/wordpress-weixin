@@ -1,3 +1,21 @@
+<?php
+
+//Create a Custom Action Hook
+//1. Define the hook:
+function wpwx_token_validate() {
+  // Set the action at priority of 10 and note that it accepts 2 arguments.
+  do_action('wpwx_token_validate');
+}
+//2.  Attach your function to the hook using add_action:
+add_action('wpwx_token_validate', 'wpwx_token_validate_function');
+ 
+function wpwx_token_validate_function() {
+	echo 'Hey, that is amazing.';
+}
+
+?>
+
+
 <!-- import CSS -->
 <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
 <!-- import Vue before Element -->
