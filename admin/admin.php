@@ -1,5 +1,5 @@
 <?php
-
+defined( 'ABSPATH' ) or die( 'You cannot be here.' );
 
 
 add_action( 'admin_menu', 'wpwx_admin_menu', 8 );
@@ -37,14 +37,14 @@ function wpwx_admin_menu() {
 }
 
 function wpwx_admin_message_page(){
-  echo 'wpwx admin message page:'.__FILE__;
-  
+  //echo 'wpwx admin message page:'.__FILE__;
+  //include("wx-token.php");
 }
 
 function wpwx_admin_setting_page(){
   echo 'wpwx_admin_setting_page:'.__FILE__;
   include("setting-page.php");
-  wpwx_token_validate();
+  
 }
 
 ?>
