@@ -59,7 +59,26 @@ var wxSetting = {
       submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
+            //let mock = new AxiosMockAdapter(axios)
+            //let _this = this            
+            //mock.onPost('ajax-setting.php').reply(200, {
+            //  AppID: 'AppID', 
+            //  AppSecret: '1234567890'
+            //})
+            /* 送出Post */
+            axios.post('admin/ajax-setting.php', {
+              AppID: this.settingForm.AppID, 
+              AppSecret: this.settingForm.AppSecret
+            })
+            .then(function (response) {
+              alert('成功送出資料，AppID是'+ this.settingForm.AppID +'，AppSecret是'+ this.settingForm.AppSecret);
+            })
+            .catch(function (error) {
+              alert('送出失敗')
+            });
+
             alert('submit!');
+            
           } else {
             console.log('error submit!!');
             return false;
@@ -72,5 +91,5 @@ var wxSetting = {
     }
   }
 var settingPage = Vue.extend(wxSetting)
-var wxSetting = new settingPage().$mount('#wxSetting')
+var vueSetting = new settingPage().$mount('#wxSetting')
 </script>

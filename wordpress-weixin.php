@@ -1,10 +1,11 @@
 <?php
 /**
  * Plugin Name: Weixin - Wechat
+ * Plugin URI: https://github.com/polinwei/wordpress-weixin
  * Description: 微信公眾號-發送訊息系統平台
  * Version: 1.0.0
  * Author: Polin WEI
- * Author URI: https://github.com/polinwei/wordpress-weixin
+ * Author URI: http://polinwei.blogspot.com/
  * License: MIT
  * Text Domain: Weixin-Wechat
  */
