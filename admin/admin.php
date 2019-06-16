@@ -2,7 +2,6 @@
 defined( 'ABSPATH' ) or die( 'You cannot be here.' );
 
 add_action( 'admin_menu', 'wpwx_admin_menu', 8 );
-
 function wpwx_admin_menu() {
 	global $_wp_last_object_menu;
 
@@ -31,17 +30,30 @@ function wpwx_admin_menu() {
     'manage_options', 
     'weixin-wechat-setting', 
     'wpwx_admin_setting_page' );  
+  
+    add_submenu_page( 
+      'weixin-wechat', 
+      __('Weixin Wechat', 'wpwx'), 
+      __('Ajax Example', 'wpwx'), 
+      'manage_options', 
+      'weixin-wechat-ajax-example', 
+      'wpwx_admin_ajax_example' );  
 
- 
 }
 
 function wpwx_admin_message_page(){
-  //echo 'wpwx admin message page:'.__FILE__;
+  echo 'wpwx admin message page:'.__FILE__;
   //include("wx-token.php");
+  include("message-page.php"); 
 }
 
 function wpwx_admin_setting_page(){  
   include("setting-page.php");  
 }
 
-?>
+define( 'MY_ACTION_NONCE', 'my-action-' );
+function wpwx_admin_ajax_example(){  
+  include("ajax-example.php");
+}
+
+

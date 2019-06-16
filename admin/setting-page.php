@@ -1,14 +1,13 @@
 <?php
+
 // don't load directly
 if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
+
 require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
-
 ?>
-
-
 
 <div id="wxSetting">
     
@@ -39,57 +38,64 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 
 <script>
 var wxSetting = {
-    data() {
-      return {
-        settingForm: {
-          AppID: '',
-          AppSecret: ''
-        },
-        rules: {
-          AppID: [
-            { required: true, message: '請輸入 AppID', trigger: 'blur' }
-          ],
-          AppSecret: [
-            { required: true, message: '請輸入 AppSecret', trigger: 'blur' }
-          ]
-        }
-      };
-    },
-    methods: {
-      submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            //let mock = new AxiosMockAdapter(axios)
-            //let _this = this            
-            //mock.onPost('ajax-setting.php').reply(200, {
-            //  AppID: 'AppID', 
-            //  AppSecret: '1234567890'
-            //})
-            /* 送出Post */
-            axios.post('admin/ajax-setting.php', {
-              AppID: this.settingForm.AppID, 
-              AppSecret: this.settingForm.AppSecret
-            })
-            .then(function (response) {
-              alert('成功送出資料，AppID是'+ this.settingForm.AppID +'，AppSecret是'+ this.settingForm.AppSecret);
-            })
-            .catch(function (error) {
-              alert('送出失敗')
-            });
-
-            alert('submit!');
-            
-          } else {
-            console.log('error submit!!');
-            return false;
-          }
-        });
+  data() {
+    return {
+      settingForm: {
+        AppID: '',
+        AppSecret: ''          
       },
-      resetForm(formName) {
-        this.$refs[formName].resetFields();
+      rules: {
+        AppID: [
+          { required: true, message: '請輸入 AppID', trigger: 'blur' }
+        ],
+        AppSecret: [
+          { required: true, message: '請輸入 AppSecret', trigger: 'blur' }
+        ]
       }
+    };
+  },
+  methods: {
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          /* 送出Post */
+          alert('submit!'+this.settingForm.AppID+'-'+this.settingForm.AppSecret);
+          // '<?php echo WPWX_PLUGIN_URL."/admin/ajax-setting.php" ?>'
+          // ajaxurl
+          axios.post(ajaxurl, {
+            action: 'my_action',             
+            AppID: this.settingForm.AppID, 
+            AppSecret: this.settingForm.AppSecret,
+            param: 'st1'
+          })
+          .then(function (response) {
+            alert('成功送出資料'+response.data);
+          })
+          .catch(function (error) {
+            alert('送出失敗:Oops! Sorry error occurred! Internet issue.')
+          });         
+          
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
+    resetForm(formName) {
+      this.$refs[formName].resetFields();
     }
   }
+}
 var settingPage = Vue.extend(wxSetting)
 var vueSetting = new settingPage().$mount('#wxSetting')
 </script>
+
+
+<?php
+add_action( 'admin_footer', 'wpwx_setting_javascript' ); // Write our JS below here
+
+function wpwx_setting_javascript() { ?>
+	<script type="text/javascript" >
+
+	</script> <?php
+}
