@@ -65,15 +65,17 @@ function wpwxtoken_route_callback( ) {
 }
 
 
+/**
+ * Ajax Example
+ */
+add_action( 'wp_ajax_my_ajax_example_action', 'my_ajax_example_action' );
 
-add_action( 'wp_ajax_my_action', 'my_action' );
-
-function my_action() {
+function my_ajax_example_action() {
     global $wpdb; // this is how you get access to the database
 
     $id    = $_POST['id'];
     $nonce = $_POST['nonce'];
-    if ( wp_verify_nonce( $nonce, MY_ACTION_NONCE . $id ) ) {
+    if ( wp_verify_nonce( $nonce, MY_AJAX_EXAMPLE_ACTION_NONCE . $id ) ) {
         $response = intval( $id );
         $response += 10;
         echo $response;

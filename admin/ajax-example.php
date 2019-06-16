@@ -1,35 +1,35 @@
 <?php
-  add_action( 'admin_ajax_notices', 'my_action_button' );
+  add_action( 'admin_ajax_notices', 'my_ajax_example_action_button' );
 
-  function my_action_button() {
-    $id   = 4321;
+  function my_ajax_example_action_button() {
+    $id   = 54321;
     $data = array(
-        'data-nonce' => wp_create_nonce( MY_ACTION_NONCE . $id ),
+        'data-nonce' => wp_create_nonce( MY_AJAX_EXAMPLE_ACTION_NONCE . $id ),
         'data-id'    => $id,
     );
-    echo get_submit_button( "Ajax Primary", 'primary large', 'my-action-button-1', FALSE, $data );
+    echo get_submit_button( "Ajax Primary", 'primary large', 'my-ajax-example-action-button-1', FALSE, $data );
 
-    $id   += 1234;
+    $id   += 12345;
     $data = array(
-        'data-nonce' => wp_create_nonce( MY_ACTION_NONCE . $id ),
+        'data-nonce' => wp_create_nonce( MY_AJAX_EXAMPLE_ACTION_NONCE . $id ),
         'data-id'    => $id,
     );
-    echo get_submit_button( "Ajax Secundary", 'secondary', 'my-action-button-2', FALSE, $data );
+    echo get_submit_button( "Ajax Secundary", 'secondary', 'my-ajax-example-action-button-2', FALSE, $data );
   }
-  my_action_button();
+  my_ajax_example_action_button();
 
 
-  add_action( 'admin_footer', 'my_action_javascript' ); // Write our JS below here
+  add_action( 'admin_footer', 'my_ajax_example_action_javascript' ); // Write our JS below here
 
-  function my_action_javascript() {
+  function my_ajax_example_action_javascript() {
       ?>
       <script type="text/javascript">
           jQuery(document).ready(function ($) {
-              $('#my-action-button-1,#my-action-button-2').click(function () {
+              $('#my-ajax-example-action-button-1,#my-ajax-example-action-button-2').click(function () {
                   var $button = $(this);
   
                   var data = {
-                      'action': 'my_action',
+                      'action': 'my_ajax_example_action',
                       'id': $button.data('id'),
                       'nonce': $button.data('nonce')
                   };

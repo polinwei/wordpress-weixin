@@ -51,7 +51,7 @@ function wpwx_admin_setting_page(){
   include("setting-page.php");  
 }
 
-define( 'MY_ACTION_NONCE', 'my-action-' );
+define( 'MY_AJAX_EXAMPLE_ACTION_NONCE', 'my-ajax-example-action-' );
 function wpwx_admin_ajax_example(){  
   include("ajax-example.php");
 }
