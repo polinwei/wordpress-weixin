@@ -65,6 +65,30 @@ function wpwxtoken_route_callback( ) {
 }
 
 
+add_action( 'wp_ajax_wpwx_ajax_setting_action', 'wpwx_ajax_setting_action' );
+// add_action('wp_ajax_nopriv_wpwx_ajax_setting_action', 'wpwx_ajax_setting_action'); //不需登入即可使用
+function wpwx_ajax_setting_action() {
+    global $wpdb; // this is how you get access to the database
+
+    $AppID    = $_POST['AppID'];
+    $AppSecret    = $_POST['AppSecret'];
+    $nonce = $_POST['nonce'];
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE ) ) {
+        // 先刪後增加
+        delete_option( 'wpwx_AppID' );
+        delete_option( 'wpwx_AppSecret' );
+        add_option( 'wpwx_AppID', $AppID );
+        add_option( 'wpwx_AppSecret', $AppSecret );
+        $data = "{'AppID': $AppID,'AppSecret' : $AppSecret}";
+        wp_send_json_success(array('code' => 200, 'data' => $data));        
+        echo 0;
+    } else {
+        wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
+        echo - 1;
+    }
+    wp_die(); // this is required to terminate immediately and return a proper response
+}
+
 /**
  * Ajax Example
  */
