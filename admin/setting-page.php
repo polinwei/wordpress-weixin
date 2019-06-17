@@ -35,20 +35,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
   </el-tabs>
 </div>
 
-
-
-<?php
-add_action( 'admin_footer', 'wpwx_setting_javascript' ); // Write our JS below here
-
-function wpwx_setting_javascript() { ?>
-	<script type="text/javascript" >
-
-/* 關閉vue-devtools */
-//Vue.config.devtools = true;
-
-/* 關閉錯誤警告 */
-//Vue.config.debug = false;
-
+<script>
 var wxSetting = {
   data() {
     return {
@@ -103,6 +90,20 @@ var wxSetting = {
 }
 var settingPage = Vue.extend(wxSetting)
 var vueSetting = new settingPage().$mount('#wxSetting')
+</script>
+
+
+<?php
+add_action( 'admin_footer', 'wpwx_setting_javascript' ); // Write our JS below here
+
+function wpwx_setting_javascript() { ?>
+	<script type="text/javascript" >
+
+/* 關閉vue-devtools */
+//Vue.config.devtools = true;
+
+/* 關閉錯誤警告 */
+//Vue.config.debug = false;
 
 	</script> <?php
 }
