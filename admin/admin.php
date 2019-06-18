@@ -47,7 +47,7 @@ function wpwx_admin_message_page(){
   include("message-page.php"); 
 }
 
-define( 'WPWX_AJAX_SETTING_ACTION_NONCE', 'wpwx-ajax-setting-action' );
+define( 'WPWX_AJAX_SETTING_ACTION_NONCE', 'wpwx-ajax-setting-action-' );
 function wpwx_admin_setting_page(){  
   include("setting-page.php");  
 }

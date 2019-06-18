@@ -5,9 +5,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
-$AppID = get_option( 'wpwx_AppID');
-$AppSecret = get_option( 'wpwx_AppSecret');
-
 require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 ?>
 
@@ -20,8 +17,11 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
           <el-input v-model="settingForm.AppID"></el-input>
         </el-form-item>
         <el-form-item label="AppSecret" prop="AppSecret">
-          <el-input v-model="settingForm.AppSecret" value=<?php echo $AppSecret?> ></el-input>
+          <el-input v-model="settingForm.AppSecret"></el-input>
         </el-form-item>
+        <el-form-item label="Token" prop="Token">
+          <el-input v-model="settingForm.Token"></el-input>
+        </el-form-item>        
         <el-form-item>
           <el-button type="primary" @click="submitForm('settingForm')">存檔</el-button>
           <el-button @click="resetForm('settingForm')">重置</el-button>
@@ -41,7 +41,8 @@ var wxSetting = {
     return {
       settingForm: {
         AppID: '',
-        AppSecret: ''          
+        AppSecret: '',
+        Token: ''        
       },
       rules: {
         AppID: [
@@ -49,6 +50,9 @@ var wxSetting = {
         ],
         AppSecret: [
           { required: true, message: '請輸入 AppSecret', trigger: 'blur' }
+        ],
+        Token: [
+          { required: true, message: '請輸入 Token', trigger: 'blur' }
         ]
       }
     };
@@ -57,20 +61,22 @@ var wxSetting = {
 	  console.log('init');
     this.settingForm.AppID='<?php echo get_option( 'wpwx_AppID'); ?>';
     this.settingForm.AppSecret='<?php echo get_option( 'wpwx_AppSecret'); ?>';
+    this.settingForm.Token='<?php echo get_option( 'wpwx_Token'); ?>';
   },
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           /* 送出Post */
-          alert('submit!'+this.settingForm.AppID+'-'+this.settingForm.AppSecret);
+          //alert('submit!'+this.settingForm.AppID+'-'+this.settingForm.AppSecret);
           // '<?php echo WPWX_PLUGIN_URL."/admin/ajax-setting.php" ?>'
           // ajaxurl
           var data = {
                       'action': 'wpwx_ajax_setting_action',
                       'AppID': this.settingForm.AppID, 
                       'AppSecret': this.settingForm.AppSecret,
-                      'nonce': '<?php echo wp_create_nonce('wpwx-ajax-setting-action'); ?>'
+                      'Token': this.settingForm.Token,
+                      'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
           };
           $.post(ajaxurl, data, function (response) {
                       //alert('Got this from the server: ' + response);

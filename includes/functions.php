@@ -72,14 +72,17 @@ function wpwx_ajax_setting_action() {
 
     $AppID    = $_POST['AppID'];
     $AppSecret    = $_POST['AppSecret'];
-    $nonce = $_POST['nonce'];
-    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE ) ) {
+    $Token    = $_POST['Token'];
+    $nonce = $_POST['nonce'];    
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
         // 先刪後增加
         delete_option( 'wpwx_AppID' );
         delete_option( 'wpwx_AppSecret' );
+        delete_option( 'wpwx_Token' );
         add_option( 'wpwx_AppID', $AppID );
         add_option( 'wpwx_AppSecret', $AppSecret );
-        $data = "{'AppID': $AppID,'AppSecret' : $AppSecret}";
+        add_option( 'wpwx_Token', $Token );
+        $data = "{'AppID': $AppID,'AppSecret' : $AppSecret, ,'Token' : $Token}";
         wp_send_json_success(array('code' => 200, 'data' => $data));        
         echo 0;
     } else {
