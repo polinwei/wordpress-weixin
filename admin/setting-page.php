@@ -36,66 +36,68 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 </div>
 
 <script>
-var wxSetting = {
-  data() {
-    return {
-      settingForm: {
-        AppID: '',
-        AppSecret: '',
-        Token: ''        
-      },
-      rules: {
-        AppID: [
-          { required: true, message: '請輸入 AppID', trigger: 'blur' }
-        ],
-        AppSecret: [
-          { required: true, message: '請輸入 AppSecret', trigger: 'blur' }
-        ],
-        Token: [
-          { required: true, message: '請輸入 Token', trigger: 'blur' }
-        ]
-      }
-    };
-  },
-  mounted() {
-	  console.log('init');
-    this.settingForm.AppID='<?php echo get_option( 'wpwx_AppID'); ?>';
-    this.settingForm.AppSecret='<?php echo get_option( 'wpwx_AppSecret'); ?>';
-    this.settingForm.Token='<?php echo get_option( 'wpwx_Token'); ?>';
-  },
-  methods: {
-    submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          /* 送出Post */
-          //alert('submit!'+this.settingForm.AppID+'-'+this.settingForm.AppSecret);
-          // '<?php echo WPWX_PLUGIN_URL."/admin/ajax-setting.php" ?>'
-          // ajaxurl
-          var data = {
-                      'action': 'wpwx_ajax_setting_action',
-                      'AppID': this.settingForm.AppID, 
-                      'AppSecret': this.settingForm.AppSecret,
-                      'Token': this.settingForm.Token,
-                      'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
-          };
-          $.post(ajaxurl, data, function (response) {
-                      //alert('Got this from the server: ' + response);
-  
-          });
-          
-        } else {
-          console.log('error submit!!');
-          return false;
+jQuery(document).ready(function ($) {
+  var wxSetting = {
+    data() {
+      return {
+        settingForm: {
+          AppID: '',
+          AppSecret: '',
+          Token: ''        
+        },
+        rules: {
+          AppID: [
+            { required: true, message: '請輸入 AppID', trigger: 'blur' }
+          ],
+          AppSecret: [
+            { required: true, message: '請輸入 AppSecret', trigger: 'blur' }
+          ],
+          Token: [
+            { required: true, message: '請輸入 Token', trigger: 'blur' }
+          ]
         }
-      });
+      };
     },
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
+    mounted() {
+      console.log('init');
+      this.settingForm.AppID='<?php echo get_option( 'wpwx_AppID'); ?>';
+      this.settingForm.AppSecret='<?php echo get_option( 'wpwx_AppSecret'); ?>';
+      this.settingForm.Token='<?php echo get_option( 'wpwx_Token'); ?>';
+    },
+    methods: {
+      submitForm(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            /* 送出Post */
+            //alert('submit!'+this.settingForm.AppID+'-'+this.settingForm.AppSecret);
+            // '<?php echo WPWX_PLUGIN_URL."/admin/ajax-setting.php" ?>'
+            // ajaxurl
+            var data = {
+                        'action': 'wpwx_ajax_setting_action',
+                        'AppID': this.settingForm.AppID, 
+                        'AppSecret': this.settingForm.AppSecret,
+                        'Token': this.settingForm.Token,
+                        'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
+            };
+            $.post(ajaxurl, data, function (response) {
+                        //alert('Got this from the server: ' + response);
+    
+            });
+            
+          } else {
+            console.log('error submit!!');
+            return false;
+          }
+        });
+      },
+      resetForm(formName) {
+        this.$refs[formName].resetFields();
+      }
     }
   }
-}
-var settingPage = Vue.extend(wxSetting)
-var vueSetting = new settingPage().$mount('#wxSetting')
+  var settingPage = Vue.extend(wxSetting)
+  var vueSetting = new settingPage().$mount('#wxSetting')
+});
 </script>
 
 
@@ -103,14 +105,15 @@ var vueSetting = new settingPage().$mount('#wxSetting')
 add_action( 'admin_footer', 'wpwx_setting_javascript' ); // Write our JS below here
 
 function wpwx_setting_javascript() { ?>
-	<script type="text/javascript" >
+  <script type="text/javascript" >
+    jQuery(document).ready(function ($) {
+      /* 關閉vue-devtools */
+      //Vue.config.devtools = true;
+      /* 關閉錯誤警告 */
+      //Vue.config.debug = false;
 
-/* 關閉vue-devtools */
-//Vue.config.devtools = true;
 
-/* 關閉錯誤警告 */
-//Vue.config.debug = false;
-
+    });
 	</script> <?php
 }
 
