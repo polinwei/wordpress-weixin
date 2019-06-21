@@ -25,6 +25,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         <el-form-item>
           <el-button type="primary" @click="submitForm('settingForm')">存檔</el-button>
           <el-button @click="resetForm('settingForm')">重置</el-button>
+          <el-button type="primary" @click="openMsg">Message Box</el-button>
         </el-form-item>
       </el-form>      
     </el-tab-pane>
@@ -36,6 +37,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 </div>
 
 <script>
+
 jQuery(document).ready(function ($) {
   var wxSetting = {
     data() {
@@ -79,11 +81,11 @@ jQuery(document).ready(function ($) {
                         'Token': this.settingForm.Token,
                         'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
             };
-            $.post(ajaxurl, data, function (response) {
-                        //alert('Got this from the server: ' + response);
-    
-            });
-            
+            $.post(ajaxurl, data, function (response) {                
+                alert('Send success!!' );                 
+            })
+            .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+             
           } else {
             console.log('error submit!!');
             return false;
@@ -92,7 +94,16 @@ jQuery(document).ready(function ($) {
       },
       resetForm(formName) {
         this.$refs[formName].resetFields();
-      }
+      },
+		  openMsg(){
+		  	console.log('openMsg');
+		  	//$alert(message, title, options);
+		  	this.$alert('This is a message', 'Title');
+		  	this.$message({
+              type: 'info',
+              message: 'Hi !!'
+            });
+		  }
     }
   }
   var settingPage = Vue.extend(wxSetting)
