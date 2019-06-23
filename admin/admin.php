@@ -23,14 +23,25 @@ function wpwx_admin_menu() {
     'weixin-wechat-message', 
     'wpwx_admin_message_page' );
 
-  add_submenu_page( 
-    'weixin-wechat', 
-    __('Weixin Wechat', 'wpwx'), 
-    __('微信參數設定', 'wpwx'), 
-    'manage_options', 
-    'weixin-wechat-setting', 
-    'wpwx_admin_setting_page' );  
-  
+
+
+    add_submenu_page( 
+      'weixin-wechat', 
+      __('Weixin Wechat', 'wpwx'), 
+      __('微信粉絲', 'wpwx'), 
+      'manage_options', 
+      'weixin-wechat-users', 
+      'wpwx_admin_weixin_users_page' );     
+
+      add_submenu_page( 
+        'weixin-wechat', 
+        __('Weixin Wechat', 'wpwx'), 
+        __('微信參數設定', 'wpwx'), 
+        'manage_options', 
+        'weixin-wechat-setting', 
+        'wpwx_admin_setting_page' );       
+      
+
     add_submenu_page( 
       'weixin-wechat', 
       __('Weixin Wechat', 'wpwx'), 
@@ -42,7 +53,7 @@ function wpwx_admin_menu() {
 }
 
 function wpwx_admin_message_page(){
-  echo 'wpwx admin message page:'.__FILE__;
+  //echo 'wpwx admin message page:'.__FILE__;
   //include("wx-token.php");
   include("message-page.php"); 
 }
@@ -50,6 +61,10 @@ function wpwx_admin_message_page(){
 define( 'WPWX_AJAX_SETTING_ACTION_NONCE', 'wpwx-ajax-setting-action-' );
 function wpwx_admin_setting_page(){  
   include("setting-page.php");  
+}
+
+function wpwx_admin_weixin_users_page(){
+  include("wx-users-page.php");
 }
 
 define( 'MY_AJAX_EXAMPLE_ACTION_NONCE', 'my-ajax-example-action-' );

@@ -15,15 +15,12 @@ $app= Factory::officialAccount($ewcConfig);
 $server = $app->server;
 $user = $app->user;
 
-$text = 'Hello!! Polin !!';
-$openid = 'ob9Ek1V2nZrK8VVptu89XQgrCvvE';
-$app->broadcasting->sendText($text, [$openId]);
-
-//ewcSendNews();
-//ewcSendMsg();
+require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 
 
-//wcdSendMessage($wcdConfig);
+
+
+
 
 function wcdSendMessage($wcdConfig){
   try {
@@ -67,4 +64,105 @@ function ewcSendNews(){
   $news = new News($items);
   $result = $app->customer_service->message($news)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
 }
+/**
+ * 取得所有文章
+ */
+function getAllPost(){
+  global $wpdb; 
+  $query = "SELECT DISTINCT id, post_date, post_title, post_content, guid as post_url
+            ,(SELECT display_name from wp_users WHERE wp_users.id = wp_posts.post_author) AS 'post_author'
+            ,(SELECT meta_value FROM wp_postmeta WHERE wp_postmeta.meta_key='_wp_attached_file' and  wp_postmeta.post_id=
+              (SELECT meta_value FROM wp_postmeta WHERE wp_postmeta.meta_key = '_thumbnail_id' AND wp_postmeta.post_id = wp_posts.ID)) AS 'image'
+            ,(SELECT group_concat(wp_terms.name separator ', ') FROM wp_terms
+                INNER JOIN wp_term_taxonomy on wp_terms.term_id = wp_term_taxonomy.term_id
+                INNER JOIN wp_term_relationships wpr on wpr.term_taxonomy_id = wp_term_taxonomy.term_taxonomy_id
+                WHERE taxonomy= 'category' and wp_posts.ID = wpr.object_id
+              ) AS 'Categories'
+            ,(SELECT group_concat(wp_terms.name separator ', ') 
+                FROM wp_terms
+                INNER JOIN wp_term_taxonomy on wp_terms.term_id = wp_term_taxonomy.term_id
+                INNER JOIN wp_term_relationships wpr on wpr.term_taxonomy_id = wp_term_taxonomy.term_taxonomy_id
+                WHERE taxonomy= 'post_tag' and wp_posts.ID = wpr.object_id
+              ) AS 'Tags'
+            FROM wp_posts
+            WHERE post_type = 'post' 
+            ORDER BY
+            id,categories,post_date";
+  $result = $wpdb->get_results($query);
+  echo json_encode( $result);
+}
 
+
+?>
+
+<div id="app">
+  <div class="wrap">
+  <template>
+    <el-table :data="tableData" border style="width: 100%">
+      <el-table-column 
+        fixed
+        prop="post_date"
+        label="日期"
+        width="150">
+      </el-table-column>
+      <el-table-column        
+        prop="post_title"
+        label="文章標題"
+        width="150">
+      </el-table-column>
+      <el-table-column
+        prop="post_author"
+        label="作者"
+        width="120">
+      </el-table-column>
+      <el-table-column
+        prop="post_url"
+        label="文章連結"
+        width="120">
+      </el-table-column>
+      <el-table-column
+        prop="Categories"
+        label="類別"
+        width="120">
+      </el-table-column>
+      <el-table-column
+        prop="Tags"
+        label="Tags"
+        width="300">
+      </el-table-column>
+      <el-table-column
+        prop="image"
+        label="image"
+        width="120">
+      </el-table-column>
+      <el-table-column
+        fixed="left"
+        label="操作"
+        width="100">
+        <template slot-scope="scope">
+          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
+          <el-button type="text" size="small">编辑</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </template>
+  </div>
+</div>
+
+<script>
+var Main = {
+    methods: {
+      handleClick(row) {
+        console.log(row);
+      }
+    },
+
+    data() {
+      return {
+        tableData: <?php echo json_decode(getAllPost()) ?>
+      }
+    }
+  }
+var Ctor = Vue.extend(Main)
+new Ctor().$mount('#app')
+</script>

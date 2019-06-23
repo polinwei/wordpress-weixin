@@ -8,7 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 ?>
 
-<div id="wxSetting">  
+<div id="wxSetting">
+<div class="wrap">
   <el-tabs type="border-card">
     <el-tab-pane>
       <span slot="label"><i class="el-icon-setting"></i> 設定 (Basic Settings)</span>
@@ -34,6 +35,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
       定時任務    
     </el-tab-pane>
   </el-tabs>
+</div>
 </div>
 
 <script>

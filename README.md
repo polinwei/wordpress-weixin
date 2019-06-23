@@ -6,6 +6,9 @@ Integrate weixin in wordpress
 
 微信驗證網址 http://your.wordpress.url/wpwxtoken
 
+#安裝 Composer
+URL: https://getcomposer.org/download/
+
 #安裝 WeChatDeveloper
 composer require zoujingli/wechat-developer
 
