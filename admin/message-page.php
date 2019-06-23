@@ -105,10 +105,20 @@ function getAllPost(){
         label="日期"
         width="150">
       </el-table-column>
+      <el-table-column prop="image" label="image" width="120">
+        <template scope="scope">            
+            <el-popover
+              placement="right"
+              title=""
+              trigger="hover">
+              <img :src="scope.row.image | imgSrc" style="max-height: 300px;max-width: 300px"/>
+              <img slot="reference" :src="scope.row.image | imgSrc" :alt="scope.row.image" style="max-height: 60px;max-width: 100px">
+            </el-popover>
+        </template>
+      </el-table-column>      
       <el-table-column        
         prop="post_title"
-        label="文章標題"
-        width="150">
+        label="文章標題">
       </el-table-column>
       <el-table-column
         prop="post_author"
@@ -128,38 +138,49 @@ function getAllPost(){
       <el-table-column
         prop="Tags"
         label="Tags"
-        width="300">
-      </el-table-column>
-      <el-table-column
-        prop="image"
-        label="image"
-        width="120">
+        width="100">
       </el-table-column>
       <el-table-column
         fixed="left"
         label="操作"
         width="100">
         <template slot-scope="scope">
-          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-          <el-button type="text" size="small">编辑</el-button>
+          <el-button @click="review(scope.row)" type="text" size="small">檢視</el-button>
+          <el-button @click="sendMsg2WX(scope.row)" type="text" size="small">發送</el-button>
         </template>
       </el-table-column>
     </el-table>
   </template>
   </div>
+
 </div>
 
+
+
 <script>
+	Vue.filter('imgSrc', function(value) {	
+		  if (value) {
+		    return '/wp-content/uploads/'+value;
+		  }
+	});
+
 var Main = {
     methods: {
-      handleClick(row) {
+      review(row) {    
         console.log(row);
+        this.$alert(row.post_content, row.post_title, {
+          dangerouslyUseHTMLString: true
+        });
+      },
+      sendMsg2WX(row) {
+        console.log(row);
+        
       }
     },
 
     data() {
       return {
-        tableData: <?php echo json_decode(getAllPost()) ?>
+        tableData: <?php echo json_decode(getAllPost()) ?>        
       }
     }
   }
