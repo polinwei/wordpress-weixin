@@ -70,24 +70,26 @@ function ewcSendNews(){
 function getAllPost(){
   global $wpdb; 
   $query = "SELECT DISTINCT id, post_date, post_title, post_content, guid as post_url
-            ,(SELECT display_name from wp_users WHERE wp_users.id = wp_posts.post_author) AS 'post_author'
-            ,(SELECT meta_value FROM wp_postmeta WHERE wp_postmeta.meta_key='_wp_attached_file' and  wp_postmeta.post_id=
-              (SELECT meta_value FROM wp_postmeta WHERE wp_postmeta.meta_key = '_thumbnail_id' AND wp_postmeta.post_id = wp_posts.ID)) AS 'image'
-            ,(SELECT group_concat(wp_terms.name separator ', ') FROM wp_terms
-                INNER JOIN wp_term_taxonomy on wp_terms.term_id = wp_term_taxonomy.term_id
-                INNER JOIN wp_term_relationships wpr on wpr.term_taxonomy_id = wp_term_taxonomy.term_taxonomy_id
-                WHERE taxonomy= 'category' and wp_posts.ID = wpr.object_id
+            ,(SELECT display_name FROM ".$wpdb->prefix ."users WHERE ".$wpdb->prefix ."users.id =  ".$wpdb->prefix ."posts.post_author) AS 'post_author'
+            ,(SELECT meta_value FROM ".$wpdb->prefix ."postmeta WHERE ".$wpdb->prefix ."postmeta.meta_key='_wp_attached_file' and  ".$wpdb->prefix ."postmeta.post_id=
+              (SELECT meta_value FROM  ".$wpdb->prefix ."postmeta WHERE  ".$wpdb->prefix ."postmeta.meta_key = '_thumbnail_id' AND  ".$wpdb->prefix ."postmeta.post_id =  ".$wpdb->prefix ."posts.ID)) AS 'image'
+            ,(SELECT group_concat( ".$wpdb->prefix ."terms.name separator ', ') FROM  ".$wpdb->prefix ."terms
+                INNER JOIN  ".$wpdb->prefix ."term_taxonomy on  ".$wpdb->prefix ."terms.term_id =  ".$wpdb->prefix ."term_taxonomy.term_id
+                INNER JOIN  ".$wpdb->prefix ."term_relationships wpr on wpr.term_taxonomy_id =  ".$wpdb->prefix ."term_taxonomy.term_taxonomy_id
+                WHERE taxonomy= 'category' and  ".$wpdb->prefix ."posts.ID = wpr.object_id
               ) AS 'Categories'
-            ,(SELECT group_concat(wp_terms.name separator ', ') 
-                FROM wp_terms
-                INNER JOIN wp_term_taxonomy on wp_terms.term_id = wp_term_taxonomy.term_id
-                INNER JOIN wp_term_relationships wpr on wpr.term_taxonomy_id = wp_term_taxonomy.term_taxonomy_id
-                WHERE taxonomy= 'post_tag' and wp_posts.ID = wpr.object_id
+            ,(SELECT group_concat( ".$wpdb->prefix ."terms.name separator ', ') 
+                FROM  ".$wpdb->prefix ."terms
+                INNER JOIN  ".$wpdb->prefix ."term_taxonomy on  ".$wpdb->prefix ."terms.term_id =  ".$wpdb->prefix ."term_taxonomy.term_id
+                INNER JOIN  ".$wpdb->prefix ."term_relationships wpr on wpr.term_taxonomy_id =  ".$wpdb->prefix ."term_taxonomy.term_taxonomy_id
+                WHERE taxonomy= 'post_tag' and  ".$wpdb->prefix ."posts.ID = wpr.object_id
               ) AS 'Tags'
-            FROM wp_posts
+            FROM  ".$wpdb->prefix ."posts
             WHERE post_type = 'post' 
+            AND post_status = 'publish'
             ORDER BY
             id,categories,post_date";
+
   $result = $wpdb->get_results($query);
   echo json_encode( $result);
 }
