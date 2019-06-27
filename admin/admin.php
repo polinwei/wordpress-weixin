@@ -52,9 +52,8 @@ function wpwx_admin_menu() {
 
 }
 
+define( 'WPWX_AJAX_WEIXIN_ACTION_NONCE', 'wpwx-ajax-weixin-action-' );
 function wpwx_admin_message_page(){
-  //echo 'wpwx admin message page:'.__FILE__;
-  //include("wx-token.php");
   include("message-page.php"); 
 }
 

@@ -1,4 +1,8 @@
 <?php
+require_once WPWX_PLUGIN_DIR . '/vendor/autoload.php';
+use EasyWeChat\Kernel\Messages\Text;
+use EasyWeChat\Kernel\Messages\News;
+use EasyWeChat\Kernel\Messages\NewsItem;
 
 function wpwx_plugin_url( $path = '' ) {
 	$url = plugins_url( $path, WPWX_PLUGIN );
@@ -83,6 +87,29 @@ function wpwx_ajax_setting_action() {
         add_option( 'wpwx_AppSecret', $AppSecret );
         add_option( 'wpwx_Token', $Token );
         $data = "{'AppID': $AppID,'AppSecret' : $AppSecret, ,'Token' : $Token}";
+        wp_send_json_success(array('code' => 200, 'data' => $data));        
+        echo 0;
+    } else {
+        wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
+        echo - 1;
+    }
+    wp_die(); // this is required to terminate immediately and return a proper response
+}
+
+add_action( 'wp_ajax_wpwx_ajax_ewcSendNews_action', 'wpwx_ajax_ewcSendNews_action' );
+function wpwx_ajax_ewcSendNews_action(){
+
+    global $wpdb; // this is how you get access to the database
+    global $app;  // EasyWeChat app
+    
+    $post = $_POST['post'];
+    $openid = $_POST['openid'];
+    $nonce = $_POST['nonce'];
+
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ) ) {
+       
+        
+        $data = "{'post_id': $post[id], 'openid':$openid}";
         wp_send_json_success(array('code' => 200, 'data' => $data));        
         echo 0;
     } else {

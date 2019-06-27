@@ -1,5 +1,6 @@
 <?php
 defined( 'ABSPATH' ) or die( 'You cannot be here.' );
+require_once WPWX_PLUGIN_DIR . '/includes/functions.php';
 require_once WPWX_PLUGIN_DIR . '/vendor/autoload.php';
 use EasyWeChat\Factory;
 use EasyWeChat\Kernel\Messages\Text;
@@ -50,9 +51,8 @@ function ewcSendMsg(){
 
 }
 
-function ewcSendNews(){
+function ewcSendNews($post=""){
   global $app;
-
   $items = [
     new NewsItem([
         'title'       => '網站第一篇文章',
@@ -93,7 +93,6 @@ function getAllPost(){
   $result = $wpdb->get_results($query);
   echo json_encode( $result);
 }
-
 
 ?>
 
@@ -160,6 +159,7 @@ function getAllPost(){
 
 
 <script>
+jQuery(document).ready(function ($) {
 	Vue.filter('imgSrc', function(value) {	
 		  if (value) {
 		    return '/wp-content/uploads/'+value;
@@ -176,7 +176,16 @@ var Main = {
       },
       sendMsg2WX(row) {
         console.log(row);
-        
+        var data = {
+                        'action': 'wpwx_ajax_ewcSendNews_action',
+                        'post': row, 
+                        'openid': 'ob9Ek1V2nZrK8VVptu89XQgrCvvE',
+                        'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ); ?>'
+            };
+            $.post(ajaxurl, data, function (response) {                
+                alert('Send success!!' );                 
+            })
+            .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
       }
     },
 
@@ -186,6 +195,7 @@ var Main = {
       }
     }
   }
-var Ctor = Vue.extend(Main)
-new Ctor().$mount('#app')
+  var Ctor = Vue.extend(Main)
+  new Ctor().$mount('#app')
+});
 </script>

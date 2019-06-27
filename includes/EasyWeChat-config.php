@@ -55,15 +55,5 @@ return [
         // 'base_uri' => 'https://api.weixin.qq.com/', // 如果你在国外想要覆盖默认的 url 的时候才使用，根据不同的模块配置不同的 uri
     ],
 
-    /**
-     * OAuth 配置
-     *
-     * scopes：公众平台（snsapi_userinfo / snsapi_base），开放平台：snsapi_login
-     * callback：OAuth授权完成后的回调页地址
-     */
-    'oauth' => [
-        'scopes'   => ['snsapi_userinfo'],
-        'callback' => WPWX_PLUGIN_DIR .'/oauth_callback.php',
-    ],
 ];
 
