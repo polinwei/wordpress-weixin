@@ -105,7 +105,7 @@ function wpwx_ajax_ewcSendNews_action(){
     $post = $_POST['post'];
     $openid = $_POST['openid'];
     $nonce = $_POST['nonce'];
-    $imageUrl = json_encode( wpwx_plugin_url().'/wp-content/uploads/'.$post['image']);
+    $imageUrl = wpwx_plugin_url().'/wp-content/uploads/'.$post['image'];
     
     if ( wp_verify_nonce( $nonce, WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ) ) {
         $items = [
@@ -119,8 +119,8 @@ function wpwx_ajax_ewcSendNews_action(){
         $news = new News($items);
         $result = $app->customer_service->message($news)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
         
-        $data = "{'post_id': $post[id], 'openid':$openid}";
-        wp_send_json_success( array('code' => 200, 'data' => $data, 'img'=> $imageUrl ) );        
+        $data = "{'post_id': $post[id], 'openid':$openid, 'img': $imageUrl , 'url': $post[post_url]}";
+        wp_send_json_success( array('code' => 200, 'data' => $data  ) );        
         echo 0;
     } else {
         wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
