@@ -1,5 +1,5 @@
 <?php
-require_once WPWX_PLUGIN_DIR . '/vendor/autoload.php';
+
 use EasyWeChat\Kernel\Messages\Text;
 use EasyWeChat\Kernel\Messages\News;
 use EasyWeChat\Kernel\Messages\NewsItem;
@@ -105,12 +105,22 @@ function wpwx_ajax_ewcSendNews_action(){
     $post = $_POST['post'];
     $openid = $_POST['openid'];
     $nonce = $_POST['nonce'];
-
+    $imageUrl = json_encode( wpwx_plugin_url().'/wp-content/uploads/'.$post['image']);
+    
     if ( wp_verify_nonce( $nonce, WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ) ) {
-       
+        $items = [
+            new NewsItem([
+                'title'       => $post['post_title'],
+                'description' => $post['post_content'],
+                'url'         => $post['post_url'],
+                'image'       => $imageUrl,
+            ]),
+        ];
+        $news = new News($items);
+        $result = $app->customer_service->message($news)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
         
         $data = "{'post_id': $post[id], 'openid':$openid}";
-        wp_send_json_success(array('code' => 200, 'data' => $data));        
+        wp_send_json_success( array('code' => 200, 'data' => $data, 'img'=> $imageUrl ) );        
         echo 0;
     } else {
         wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
@@ -137,4 +147,51 @@ function my_ajax_example_action() {
         echo - 1;
     }
     wp_die(); // this is required to terminate immediately and return a proper response
+}
+/**
+ * EasyWeChat Function
+ */
+function ewcSendMsg(){
+    global $app; 
+
+    $message = new Text('Hello world! Polin WEI ! This is on Function');
+
+    $result = $app->customer_service->message($message)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
+
+}
+
+function ewcSendNews(){
+    global $app;
+    $items = [
+        new NewsItem([
+            'title'       => '網站第一篇文章',
+            'description' => '歡迎使用 WordPress。這是這個網站的第一篇文章，試試為這篇文章進行編輯或直接刪除，然後開始撰寫新文章！',
+            'url'         => 'http://im.globeunion.com/2019/06/19/hello-world/',
+            'image'       => 'http://im.globeunion.com/wp-content/uploads/2019/06/city-street-1246870_640.jpg',
+        ]),
+    ];
+    $news = new News($items);
+    $result = $app->customer_service->message($news)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
+}
+
+/**
+ * WeChatDeveloper function
+ */
+function wcdSendMessage($wcdConfig){
+    try {
+        // 实例对应的接口对象
+        $msg = new \WeChat\Custom($wcdConfig);
+        $data = [
+        "touser"=> "ob9Ek1V2nZrK8VVptu89XQgrCvvE", 
+        "msgtype"=> "text", 
+        "text"=> ["content"=> "Hello Polin 魏"]    
+        
+        ];      
+        $msg->send($data);
+        
+    } catch (Exception $e) {  
+        // 出错啦，处理下吧
+        echo $e->getMessage() . PHP_EOL;
+        
+    }  
 }

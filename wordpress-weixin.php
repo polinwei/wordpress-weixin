@@ -25,7 +25,20 @@ define( 'WPWX_PLUGIN_DIR', untrailingslashit( dirname( WPWX_PLUGIN ) ) );
 
 // Deprecated, not used in the plugin core. Use wpwx_plugin_url() instead that in functions.php.
 define( 'WPWX_PLUGIN_URL',  untrailingslashit( plugins_url( '', WPWX_PLUGIN ) ) );
-  
+
+// Include 微信外掛API
+require_once WPWX_PLUGIN_DIR . '/vendor/autoload.php';
+use EasyWeChat\Factory;
+
+
+$wcdConfig= (include WPWX_PLUGIN_DIR . '/includes/WeChatDeveloper-config.php');
+$ewcConfig= (include WPWX_PLUGIN_DIR . '/includes/EasyWeChat-config.php');
+
+$app= Factory::officialAccount($ewcConfig);
+$server = $app->server;
+$user = $app->user;
+global $app, $server, $user, $wcdConfig, $ewcConfig;
+
 require_once WPWX_PLUGIN_DIR . '/includes/functions.php';
 
 if ( is_admin() ) {

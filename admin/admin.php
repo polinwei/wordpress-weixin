@@ -23,8 +23,6 @@ function wpwx_admin_menu() {
     'weixin-wechat-message', 
     'wpwx_admin_message_page' );
 
-
-
     add_submenu_page( 
       'weixin-wechat', 
       __('Weixin Wechat', 'wpwx'), 
