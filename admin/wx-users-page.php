@@ -20,13 +20,14 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
       style="width: 100%">
       <el-table-column
         fixed
-        prop="date"
-        label="日期"
+        prop="subscribe_time"
+        label="觀注日期"
         width="150">
       </el-table-column>
       <el-table-column
-        prop="name"
+        prop="nickname"
         label="姓名"
+        sortable=true
         width="120">
       </el-table-column>
       <el-table-column
@@ -36,26 +37,19 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
       </el-table-column>
       <el-table-column
         prop="city"
-        label="市区"
+        label="城巿"
         width="120">
       </el-table-column>
-      <el-table-column
-        prop="address"
-        label="地址"
-        width="300">
-      </el-table-column>
-      <el-table-column
-        prop="zip"
-        label="邮编"
-        width="120">
-      </el-table-column>
+      <el-table-column prop="headimgurl" label="Avatar" width="120">
+        <template scope="scope">
+              <img :src="scope.row.headimgurl" style="max-height: 60px;max-width: 60px"/>
+        </template>
+      </el-table-column>      
       <el-table-column
         fixed="right"
-        label="操作"
-        width="100">
+        label="操作">
         <template slot-scope="scope">
-          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-          <el-button type="text" size="small">编辑</el-button>
+          <el-button @click="sendMsg2WX(scope.row)" type="text" size="small">發送個人訊息</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -67,24 +61,13 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 var Main = {
     data() {
       return {
-        tableData: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }]
+        tableData: [<?php ewcGetAllUsers(); ?>]
       }
+    },
+    methods: {
+      sendMsg2WX(row) {
+        console.log(row);
+      }      
     }
   }
 var Ctor = Vue.extend(Main)

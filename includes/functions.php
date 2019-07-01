@@ -105,13 +105,13 @@ function wpwx_ajax_ewcSendNews_action(){
     $post = $_POST['post'];
     $openid = $_POST['openid'];
     $nonce = $_POST['nonce'];
-    $imageUrl = wpwx_plugin_url().'/wp-content/uploads/'.$post['image'];
+    $imageUrl = get_option('siteurl').'/wp-content/uploads/'.$post['image'];
     
     if ( wp_verify_nonce( $nonce, WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ) ) {
         $items = [
             new NewsItem([
                 'title'       => $post['post_title'],
-                'description' => $post['post_content'],
+                'description' => strip_tags($post['post_content']),
                 'url'         => $post['post_url'],
                 'image'       => $imageUrl,
             ]),
@@ -173,6 +173,24 @@ function ewcSendNews(){
     $news = new News($items);
     $result = $app->customer_service->message($news)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
 }
+
+function ewcGetAllUsers(){
+    global $app;
+    $userList = "";
+    $users = $app->user->list();
+
+    foreach ($users['data']['openid'] as $openid) {               
+        $user = $app->user->get( $openid );
+        $subscribe_time = date("Y/m/d", intval($user['subscribe_time']) );
+        $user_detail = "{ 'openid': '$user[openid]', 'nickname':'$user[nickname]', 'sex':'$user[sex]', 
+            'language':'$user[language]', 'city':'$user[city]', 'province':'$user[province]', 'country':'$user[country]',
+            'headimgurl':'$user[headimgurl]', 'subscribe_time':'$subscribe_time' }";
+        $userList .= $userList . "," . $user_detail;
+    }
+
+    echo $userList;
+}
+
 
 /**
  * WeChatDeveloper function
