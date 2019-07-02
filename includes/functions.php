@@ -68,7 +68,7 @@ function wpwxtoken_route_callback( ) {
     include (WPWX_PLUGIN_DIR . '/admin/wx-token.php');
 }
 
-
+// 設定 wechat 基本參數
 add_action( 'wp_ajax_wpwx_ajax_setting_action', 'wpwx_ajax_setting_action' );
 // add_action('wp_ajax_nopriv_wpwx_ajax_setting_action', 'wpwx_ajax_setting_action'); //不需登入即可使用
 function wpwx_ajax_setting_action() {
@@ -95,7 +95,7 @@ function wpwx_ajax_setting_action() {
     }
     wp_die(); // this is required to terminate immediately and return a proper response
 }
-
+// 傳送圖文消息
 add_action( 'wp_ajax_wpwx_ajax_ewcSendNews_action', 'wpwx_ajax_ewcSendNews_action' );
 function wpwx_ajax_ewcSendNews_action(){
 
@@ -117,7 +117,7 @@ function wpwx_ajax_ewcSendNews_action(){
             ]),
         ];
         $news = new News($items);
-        $result = $app->customer_service->message($news)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
+        $result = $app->customer_service->message($news)->to($openid)->send();
         
         $data = "{'post_id': $post[id], 'openid':$openid, 'img': $imageUrl , 'url': $post[post_url]}";
         wp_send_json_success( array('code' => 200, 'data' => $data  ) );        
@@ -127,6 +127,32 @@ function wpwx_ajax_ewcSendNews_action(){
         echo - 1;
     }
     wp_die(); // this is required to terminate immediately and return a proper response
+}
+
+// 傳送訊息
+add_action( 'wp_ajax_wpwx_ajax_ewcSendMessage_action', 'wpwx_ajax_ewcSendMessage_action' );
+function wpwx_ajax_ewcSendMessage_action(){
+    global $wpdb; // this is how you get access to the database
+    global $app;  // EasyWeChat app
+    
+    $user = $_POST['user'];
+    $message = $_POST['message'];
+    $openid = $user['openid'];
+    $nonce = $_POST['nonce'];
+
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ) ) {
+        $msg = new Text($message);
+        $result = $app->customer_service->message($msg)->to($openid)->send();
+
+        wp_send_json_success( array('code' => 200, 'data' => $result  ) );        
+        echo 0;
+
+    }else {
+        wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
+        echo - 1;
+    }
+    wp_die(); // this is required to terminate immediately and return a proper response
+
 }
 
 /**
@@ -185,7 +211,7 @@ function ewcGetAllUsers(){
         $user_detail = "{ 'openid': '$user[openid]', 'nickname':'$user[nickname]', 'sex':'$user[sex]', 
             'language':'$user[language]', 'city':'$user[city]', 'province':'$user[province]', 'country':'$user[country]',
             'headimgurl':'$user[headimgurl]', 'subscribe_time':'$subscribe_time' }";
-        $userList .= $userList . "," . $user_detail;
+        $userList .=  $user_detail . ",";
     }
 
     echo $userList;

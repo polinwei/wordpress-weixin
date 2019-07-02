@@ -9,8 +9,6 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 
 ?>
 
-
-
 <div id="app">
   <div class="wrap">
   <template>
@@ -49,7 +47,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         fixed="right"
         label="操作">
         <template slot-scope="scope">
-          <el-button @click="sendMsg2WX(scope.row)" type="text" size="small">發送個人訊息</el-button>
+          <el-button @click="sendMsg2WX(scope.row)" type="text" size="small">發送訊息</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -58,18 +56,49 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 </div>
 
 <script>
-var Main = {
-    data() {
-      return {
-        tableData: [<?php ewcGetAllUsers(); ?>]
+jQuery(document).ready(function ($) {
+  var Main = {
+      data() {
+        return {
+          tableData: [<?php ewcGetAllUsers(); ?>]
+        }
+      },
+      methods: {
+        sendMsg2WX(row) {
+          console.log(row);
+
+          this.$prompt('請輸入要傳送的訊息', '提示', {
+            confirmButtonText: '確定',
+            cancelButtonText: '取消',
+          }).then(({ value }) => {
+            this.$message({
+              type: 'success',
+              message: '您要傳送的訊息是: ' + value
+            });
+
+            var data = {
+                          'action': 'wpwx_ajax_ewcSendMessage_action',
+                          'user': row,
+                          'message' : value,                        
+                          'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ); ?>'
+              };
+              $.post(ajaxurl, data, function (response) {                
+                  alert('Send success!!' );                 
+              })
+              .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+
+
+          }).catch(() => {
+            this.$message({
+              type: 'warning',
+              message: '取消傳送訊息'
+            });       
+          });
+
+        }      
       }
-    },
-    methods: {
-      sendMsg2WX(row) {
-        console.log(row);
-      }      
     }
-  }
-var Ctor = Vue.extend(Main)
-new Ctor().$mount('#app')
+  var Ctor = Vue.extend(Main)
+  new Ctor().$mount('#app')
+});
 </script>

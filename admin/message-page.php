@@ -110,13 +110,13 @@ jQuery(document).ready(function ($) {
 var Main = {
     methods: {
       review(row) {    
-        console.log(row);
+        //console.log(row);
         this.$alert(row.post_content, row.post_title, {
           dangerouslyUseHTMLString: true
         });
       },
       sendMsg2WX(row) {
-        console.log(row);
+        //console.log(row);
         var data = {
                         'action': 'wpwx_ajax_ewcSendNews_action',
                         'post': row, 
