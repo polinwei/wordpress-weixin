@@ -151,7 +151,7 @@ function wpwx_ajax_ewcSendNews_action(){
         foreach($openids as $user){
             $result = $app->customer_service->message($news)->to($user['openid'])->send();            
         }
-        $data = "{'post_id': $post[id], 'openid':$openids, 'img': $imageUrl , 'url': $post[post_url]}";
+        $data = "{'post_id': $post[id], 'img': $imageUrl , 'url': $post[post_url]}";
         wp_send_json_success( array('code' => 200, 'data' => $data  ) );        
         echo 0;
     } else {
