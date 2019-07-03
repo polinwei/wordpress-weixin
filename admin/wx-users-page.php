@@ -65,7 +65,7 @@ jQuery(document).ready(function ($) {
       },
       methods: {
         sendMsg2WX(row) {
-          console.log(row);
+          //console.log(row);
 
           this.$prompt('請輸入要傳送的訊息', '提示', {
             confirmButtonText: '確定',

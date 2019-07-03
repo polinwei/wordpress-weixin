@@ -42,8 +42,39 @@ function wpwx_hook_function() {
 	echo 'Hey, that is amazing.';
 }
 
+
 /**
- * 建立 weixin token verified 的回復頁面
+ * 取得所有文章
+ */
+function getAllPost(){
+    global $wpdb; 
+    $query = "SELECT DISTINCT id, post_date, post_title, post_content, guid as post_url
+              ,(SELECT display_name FROM ".$wpdb->prefix ."users WHERE ".$wpdb->prefix ."users.id =  ".$wpdb->prefix ."posts.post_author) AS 'post_author'
+              ,(SELECT meta_value FROM ".$wpdb->prefix ."postmeta WHERE ".$wpdb->prefix ."postmeta.meta_key='_wp_attached_file' and  ".$wpdb->prefix ."postmeta.post_id=
+                (SELECT meta_value FROM  ".$wpdb->prefix ."postmeta WHERE  ".$wpdb->prefix ."postmeta.meta_key = '_thumbnail_id' AND  ".$wpdb->prefix ."postmeta.post_id =  ".$wpdb->prefix ."posts.ID)) AS 'image'
+              ,(SELECT group_concat( ".$wpdb->prefix ."terms.name separator ', ') FROM  ".$wpdb->prefix ."terms
+                  INNER JOIN  ".$wpdb->prefix ."term_taxonomy on  ".$wpdb->prefix ."terms.term_id =  ".$wpdb->prefix ."term_taxonomy.term_id
+                  INNER JOIN  ".$wpdb->prefix ."term_relationships wpr on wpr.term_taxonomy_id =  ".$wpdb->prefix ."term_taxonomy.term_taxonomy_id
+                  WHERE taxonomy= 'category' and  ".$wpdb->prefix ."posts.ID = wpr.object_id
+                ) AS 'Categories'
+              ,(SELECT group_concat( ".$wpdb->prefix ."terms.name separator ', ') 
+                  FROM  ".$wpdb->prefix ."terms
+                  INNER JOIN  ".$wpdb->prefix ."term_taxonomy on  ".$wpdb->prefix ."terms.term_id =  ".$wpdb->prefix ."term_taxonomy.term_id
+                  INNER JOIN  ".$wpdb->prefix ."term_relationships wpr on wpr.term_taxonomy_id =  ".$wpdb->prefix ."term_taxonomy.term_taxonomy_id
+                  WHERE taxonomy= 'post_tag' and  ".$wpdb->prefix ."posts.ID = wpr.object_id
+                ) AS 'Tags'
+              FROM  ".$wpdb->prefix ."posts
+              WHERE post_type = 'post' 
+              AND post_status = 'publish'
+              ORDER BY
+              id,categories,post_date";
+  
+    $result = $wpdb->get_results($query);
+    echo json_encode( $result);
+  }
+
+/**
+ * 建立 weixin token verified 的回覆頁面
  * 要先安裝 plugin: wp-router URL: https://github.com/jbrinley/WP-Router
  */
 add_action( 'wp_router_generate_routes', 'add_wpwxtoken_route', 20 );
@@ -63,7 +94,7 @@ function add_wpwxtoken_route( $router ) {
 
     $router->add_route( 'wpwxtoken-route-id', $route_args );
 }
-
+// 轉到這個頁面: /admin/wx-token.php 
 function wpwxtoken_route_callback( ) {
     include (WPWX_PLUGIN_DIR . '/admin/wx-token.php');
 }
@@ -103,7 +134,7 @@ function wpwx_ajax_ewcSendNews_action(){
     global $app;  // EasyWeChat app
     
     $post = $_POST['post'];
-    $openid = $_POST['openid'];
+    $openids = $_POST['openids'];
     $nonce = $_POST['nonce'];
     $imageUrl = get_option('siteurl').'/wp-content/uploads/'.$post['image'];
     
@@ -116,10 +147,11 @@ function wpwx_ajax_ewcSendNews_action(){
                 'image'       => $imageUrl,
             ]),
         ];
-        $news = new News($items);
-        $result = $app->customer_service->message($news)->to($openid)->send();
-        
-        $data = "{'post_id': $post[id], 'openid':$openid, 'img': $imageUrl , 'url': $post[post_url]}";
+        $news = new News($items);        
+        foreach($openids as $user){
+            $result = $app->customer_service->message($news)->to($user['openid'])->send();            
+        }
+        $data = "{'post_id': $post[id], 'openid':$openids, 'img': $imageUrl , 'url': $post[post_url]}";
         wp_send_json_success( array('code' => 200, 'data' => $data  ) );        
         echo 0;
     } else {
@@ -177,16 +209,16 @@ function my_ajax_example_action() {
 /**
  * EasyWeChat Function
  */
-function ewcSendMsg(){
+function ewcSendMsg($openid=''){
     global $app; 
 
     $message = new Text('Hello world! Polin WEI ! This is on Function');
 
-    $result = $app->customer_service->message($message)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
+    $result = $app->customer_service->message($message)->to($openid)->send();
 
 }
 
-function ewcSendNews(){
+function ewcSendNews($openid=''){
     global $app;
     $items = [
         new NewsItem([
@@ -197,7 +229,7 @@ function ewcSendNews(){
         ]),
     ];
     $news = new News($items);
-    $result = $app->customer_service->message($news)->to('ob9Ek1V2nZrK8VVptu89XQgrCvvE')->send();
+    $result = $app->customer_service->message($news)->to($openid)->send();
 }
 
 function ewcGetAllUsers(){
@@ -217,16 +249,31 @@ function ewcGetAllUsers(){
     echo $userList;
 }
 
+function ewcGetAllOpenids(){
+    global $app;
+    $users = $app->user->list();
+    $openids='';
+    $userNames='';
+    foreach ($users['data']['openid'] as $openid) {               
+        $user = $app->user->get( $openid );
+        $tmp = "'$user[openid]'" ;
+        $openids .= $tmp . "," ;
+        $tmp = "'$user[nickname]'" ;
+        $userNames .= $tmp . "," ;
+    }
+    return array($userNames, $openids);
+
+}
 
 /**
  * WeChatDeveloper function
  */
-function wcdSendMessage($wcdConfig){
+function wcdSendMessage($wcdConfig,$openid=''){
     try {
         // 实例对应的接口对象
         $msg = new \WeChat\Custom($wcdConfig);
         $data = [
-        "touser"=> "ob9Ek1V2nZrK8VVptu89XQgrCvvE", 
+        "touser"=> $openid, 
         "msgtype"=> "text", 
         "text"=> ["content"=> "Hello Polin 魏"]    
         
