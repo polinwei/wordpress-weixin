@@ -1,6 +1,6 @@
 {
     "require": {        
         "zoujingli/wechat-developer": "^1.2",
-        "overtrue/wechat": "~4.0"
+        "overtrue/wechat": "~4.1"
     }
 }

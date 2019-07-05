@@ -54,15 +54,16 @@ define( 'WPWX_AJAX_WEIXIN_ACTION_NONCE', 'wpwx-ajax-weixin-action-' );
 function wpwx_admin_message_page(){
   include("message-page.php"); 
 }
+function wpwx_admin_weixin_users_page(){
+  include("wx-users-page.php");
+}
 
 define( 'WPWX_AJAX_SETTING_ACTION_NONCE', 'wpwx-ajax-setting-action-' );
 function wpwx_admin_setting_page(){  
   include("setting-page.php");  
 }
 
-function wpwx_admin_weixin_users_page(){
-  include("wx-users-page.php");
-}
+
 
 define( 'MY_AJAX_EXAMPLE_ACTION_NONCE', 'my-ajax-example-action-' );
 function wpwx_admin_ajax_example(){  
