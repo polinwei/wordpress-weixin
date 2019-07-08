@@ -28,9 +28,10 @@ define( 'APP_ROOT_DIR', substr(WPWX_PLUGIN,0,stripos(WPWX_PLUGIN,"\wp-content"))
 define( 'WPWX_PLUGIN_URL',  untrailingslashit( plugins_url( '', WPWX_PLUGIN ) ) );
 
 // Include 微信外掛API
+global $app, $server, $user, $wcdConfig, $ewcConfig, $wpwx_db_version;
+$wpwx_db_version = '1.0';
 require_once WPWX_PLUGIN_DIR . '/vendor/autoload.php';
 use EasyWeChat\Factory;
-
 
 $wcdConfig= (include WPWX_PLUGIN_DIR . '/includes/WeChatDeveloper-config.php');
 $ewcConfig= (include WPWX_PLUGIN_DIR . '/includes/EasyWeChat-config.php');
@@ -38,9 +39,12 @@ $ewcConfig= (include WPWX_PLUGIN_DIR . '/includes/EasyWeChat-config.php');
 $app= Factory::officialAccount($ewcConfig);
 $server = $app->server;
 $user = $app->user;
-global $app, $server, $user, $wcdConfig, $ewcConfig;
 
 require_once WPWX_PLUGIN_DIR . '/includes/functions.php';
+register_activation_hook( __FILE__, 'wpwx_install' );
+//register_activation_hook( __FILE__, 'wpwx_install_data' );
+
+
 
 if ( is_admin() ) {
 	require_once WPWX_PLUGIN_DIR . '/admin/admin.php';

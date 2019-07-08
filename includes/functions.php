@@ -3,6 +3,7 @@
 use EasyWeChat\Kernel\Messages\Text;
 use EasyWeChat\Kernel\Messages\News;
 use EasyWeChat\Kernel\Messages\NewsItem;
+use EasyWeChat\Kernel\Messages\Article;
 
 function wpwx_plugin_url( $path = '' ) {
 	$url = plugins_url( $path, WPWX_PLUGIN );
@@ -42,6 +43,47 @@ function wpwx_hook_function() {
 	echo 'Hey, that is amazing.';
 }
 
+function wpwx_install() {
+    global $wpdb,$app,$wpwx_db_version;
+ 
+    $table_name = $wpdb->prefix . "wpwx_post_media"; 
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        media_id tinytext NOT NULL,
+        media_type varchar(10) NOT NULL,
+        update_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,        
+        post_id bigint(20) NOT NULL,
+        post_guid varchar(255) DEFAULT '' NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    dbDelta( $sql );
+
+    add_option( "wpwx_db_version", $wpwx_db_version );
+
+ }
+
+ function wpwx_install_data() {
+    global $wpdb,$app;
+
+    $table_name = $wpdb->prefix . "wpwx_post_media"; 
+    
+    $list = $app->material->list('news');
+    foreach ($list['item'] as $news) {
+        $wpdb->insert( 
+            $table_name, 
+            array( 
+                'media_id' => $news['media_id'], 
+                'media_type' => 'news', 
+                'update_time' => $news['update_time'], 
+            ) 
+        );
+    }
+ }
 
 /**
  * 取得所有文章
@@ -72,6 +114,29 @@ function getAllPost(){
     $result = $wpdb->get_results($query);
     echo json_encode( $result);
   }
+
+// 海外微信帳號只能傳送 type:mpnew , 所以要先上傳
+function uploadArticle(){
+    global $app;
+    $post_material_image = $app->material->uploadImage(APP_ROOT_DIR . "/wp-content/uploads/2019/06/city-street-1246870_640-300x200.jpg");
+    
+    $post_material_thumb =  $app->material->uploadThumb(APP_ROOT_DIR . "/wp-content/uploads/2019/06/city-street-1246870_640-150x150.jpg");
+        
+    // 上传单篇图文
+    $article = new Article([
+        'title' => '網站第一篇文章',
+        'thumb_media_id' => $post_material_thumb['media_id'],
+        'author' => 'Polin WEI',
+        'content' => '歡迎使用 WordPress。這是這個網站的第一篇文章，試試為這篇文章進行編輯或直接刪除，然後開始撰寫新文章！',
+        'source_url' => 'http://im.globeunion.com/2019/06/19/hello-world/',
+        'show_cover' => 1, // 是否在文章内容显示封面图片
+
+    ]);
+    $post_material_article = $app->material->uploadArticle($article);
+    var_dump( $post_material_article) ;
+    
+    die;
+}
 
 /**
  * 建立 weixin token verified 的回覆頁面

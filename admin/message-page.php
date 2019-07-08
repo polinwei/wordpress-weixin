@@ -1,5 +1,14 @@
 <?php
 defined( 'ABSPATH' ) or die( 'You cannot be here.' );
+//uploadArticle();
+global $app;
+$list = $app->material->list('news');
+//$app->broadcasting->previewNews('83H2yFYsDryniv_bZEZ7eCxk7DCdOYJOWbS0RyaY448', 'ob9Ek1V2nZrK8VVptu89XQgrCvvE');
+var_dump($list);
+$stats = $app->material->stats();
+var_dump($stats);
+
+
 require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 ?>
 
@@ -51,10 +60,11 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
       <el-table-column
         fixed="left"
         label="操作"
-        width="100">
+        width="200">
         <template slot-scope="scope">
           <el-button @click="review(scope.row)" type="text" size="small">檢視</el-button>
-          <el-button @click="openDialog(scope.$index,scope.row)" type="text" size="small">發送</el-button>
+          <el-button @click="openDialog(scope.$index,scope.row)" type="text" size="small">個別發送</el-button>
+          <el-button @click="openBrocastDialog(scope.$index,scope.row)" type="text" size="small">群發</el-button>
         </template>
       </el-table-column>
     </el-table>
