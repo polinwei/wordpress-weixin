@@ -2,11 +2,11 @@
 defined( 'ABSPATH' ) or die( 'You cannot be here.' );
 //uploadArticle();
 global $app;
-$list = $app->material->list('news');
+//$list = $app->material->list('news');
 //$app->broadcasting->previewNews('83H2yFYsDryniv_bZEZ7eCxk7DCdOYJOWbS0RyaY448', 'ob9Ek1V2nZrK8VVptu89XQgrCvvE');
-var_dump($list);
-$stats = $app->material->stats();
-var_dump($stats);
+//var_dump($list);
+//$stats = $app->material->stats();
+//var_dump($stats);
 
 
 require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';

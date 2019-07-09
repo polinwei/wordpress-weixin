@@ -25,8 +25,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         </el-form-item>        
         <el-form-item>
           <el-button type="primary" @click="submitForm('settingForm')">存檔</el-button>
-          <el-button @click="resetForm('settingForm')">重置</el-button>
-          <el-button type="primary" @click="openMsg">Message Box</el-button>
+          <el-button @click="resetForm('settingForm')">重置</el-button>          
         </el-form-item>
       </el-form>      
     </el-tab-pane>
@@ -99,12 +98,7 @@ jQuery(document).ready(function ($) {
       },
 		  openMsg(){
 		  	console.log('openMsg');
-		  	//$alert(message, title, options);
-		  	this.$alert('This is a message', 'Title');
-		  	this.$message({
-              type: 'info',
-              message: 'Hi !!'
-            });
+		  	//$alert(message, title, options); this.$alert('This is a message', 'Title');
 		  }
     }
   }

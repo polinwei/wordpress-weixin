@@ -54,6 +54,8 @@ function wpwx_install() {
         id bigint(20) NOT NULL AUTO_INCREMENT,
         media_id tinytext NOT NULL,
         media_type varchar(10) NOT NULL,
+        media_name text NOT NULL,
+        media_url varchar(255) NOT NULL,
         update_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,        
         post_id bigint(20) NOT NULL,
         post_guid varchar(255) DEFAULT '' NOT NULL,
@@ -66,20 +68,47 @@ function wpwx_install() {
     add_option( "wpwx_db_version", $wpwx_db_version );
 
  }
-
- function wpwx_install_data() {
+// 抓取微信素材資料
+ function getAllMedias() {
     global $wpdb,$app;
 
     $table_name = $wpdb->prefix . "wpwx_post_media"; 
     
+    // 資料先清空
+    $wpdb->query(
+        'DELETE  FROM '. $table_name
+    );
+
     $list = $app->material->list('news');
     foreach ($list['item'] as $news) {
+        $media_id = $news['media_id'];
+        $media_type = 'news';
+        $update_time = $news['update_time'];
+
+        foreach ( $news['content']['news_item'] as $item ){
+            $wpdb->insert( 
+                $table_name, 
+                array( 
+                    'media_id' => $news['media_id'], 
+                    'media_type' => 'news', 
+                    'update_time' => $news['update_time'],
+                    'media_name' => $item['title'],
+                    'media_url' => $item['url'],
+                    'post_guid' => $item['content_source_url'],
+                ) 
+            );
+        }
+    }
+    $list = $app->material->list('image');
+    foreach ($list['item'] as $media) {
         $wpdb->insert( 
             $table_name, 
             array( 
-                'media_id' => $news['media_id'], 
-                'media_type' => 'news', 
-                'update_time' => $news['update_time'], 
+                'media_id' => $media['media_id'], 
+                'media_type' => 'image',
+                'media_name' => $media['name'],
+                'update_time' => $media['update_time'],
+                'media_url' => $media['url'],
             ) 
         );
     }
@@ -183,6 +212,8 @@ function wpwx_ajax_setting_action() {
         add_option( 'wpwx_AppSecret', $AppSecret );
         add_option( 'wpwx_Token', $Token );
         $data = "{'AppID': $AppID,'AppSecret' : $AppSecret, ,'Token' : $Token}";
+        // 抓取微信素材資料, 放入 table: wpwx_post_media
+        getAllMedias();
         wp_send_json_success(array('code' => 200, 'data' => $data));        
         echo 0;
     } else {
