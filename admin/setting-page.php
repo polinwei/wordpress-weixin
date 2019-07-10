@@ -22,10 +22,18 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         </el-form-item>
         <el-form-item label="Token" prop="Token">
           <el-input v-model="settingForm.Token"></el-input>
-        </el-form-item>        
+        </el-form-item>
+        <el-form-item label="IsDomestic" prop="IsDomestic">
+          <el-switch
+            v-model="settingForm.IsDomestic"
+            inactive-text="海外微信號"
+            active-text="國內微信號">
+          </el-switch>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitForm('settingForm')">存檔</el-button>
-          <el-button @click="resetForm('settingForm')">重置</el-button>          
+          <el-button @click="resetForm('settingForm')">重置</el-button>
+          <el-button type="primary" @click="delMedia">刪除微信素材</el-button>          
         </el-form-item>
       </el-form>      
     </el-tab-pane>
@@ -46,7 +54,8 @@ jQuery(document).ready(function ($) {
         settingForm: {
           AppID: '',
           AppSecret: '',
-          Token: ''        
+          Token: '',
+          IsDomestic: true,        
         },
         rules: {
           AppID: [
@@ -62,10 +71,11 @@ jQuery(document).ready(function ($) {
       };
     },
     mounted() {
-      console.log('init');
+      //console.log('init');
       this.settingForm.AppID='<?php echo get_option( 'wpwx_AppID'); ?>';
       this.settingForm.AppSecret='<?php echo get_option( 'wpwx_AppSecret'); ?>';
       this.settingForm.Token='<?php echo get_option( 'wpwx_Token'); ?>';
+      this.settingForm.IsDomestic='<?php echo get_option( 'wpwx_IsDomestic'); ?>';
     },
     methods: {
       submitForm(formName) {
@@ -80,6 +90,7 @@ jQuery(document).ready(function ($) {
                         'AppID': this.settingForm.AppID, 
                         'AppSecret': this.settingForm.AppSecret,
                         'Token': this.settingForm.Token,
+                        'IsDomestic': this.settingForm.IsDomestic,
                         'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
             };
             $.post(ajaxurl, data, function (response) {                
@@ -96,9 +107,31 @@ jQuery(document).ready(function ($) {
       resetForm(formName) {
         this.$refs[formName].resetFields();
       },
-		  openMsg(){
-		  	console.log('openMsg');
-		  	//$alert(message, title, options); this.$alert('This is a message', 'Title');
+		  delMedia(){
+		  	console.log('delMedia');
+		  	//$alert(message, title, options); 
+        this.$confirm('是否刪除微信上的所有素材？', '確認訊息', {
+          distinguishCancelAndClose: true,
+          confirmButtonText: '確定',
+          cancelButtonText: '取消'
+        })
+        .then(() => {
+          var data = {
+                      'action': 'wpwx_ajax_delMedia_action',
+                      'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
+          };
+          $.post(ajaxurl, data, function (response) {                
+              alert('Deleted Success!!' );                
+          })
+          .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+
+        })
+        .catch(action => {
+          this.$message({
+            type: 'info',
+            message: '已取消刪除'
+          })
+        });
 		  }
     }
   }

@@ -81,10 +81,6 @@ function wpwx_install() {
 
     $list = $app->material->list('news');
     foreach ($list['item'] as $news) {
-        $media_id = $news['media_id'];
-        $media_type = 'news';
-        $update_time = $news['update_time'];
-
         foreach ( $news['content']['news_item'] as $item ){
             $wpdb->insert( 
                 $table_name, 
@@ -100,19 +96,30 @@ function wpwx_install() {
         }
     }
     $list = $app->material->list('image');
-    foreach ($list['item'] as $media) {
+    saveMediaInfo2Table($list,'image');
+    $list = $app->material->list('video');
+    saveMediaInfo2Table($list,'video');
+    $list = $app->material->list('voice');
+    saveMediaInfo2Table($list,'voice');
+ }
+
+function saveMediaInfo2Table( $material_list , $type){
+    global $wpdb;
+    $table_name = $wpdb->prefix . "wpwx_post_media";
+
+    foreach ($material_list['item'] as $media) {
         $wpdb->insert( 
             $table_name, 
             array( 
                 'media_id' => $media['media_id'], 
-                'media_type' => 'image',
+                'media_type' => $type,
                 'media_name' => $media['name'],
                 'update_time' => $media['update_time'],
                 'media_url' => $media['url'],
             ) 
         );
     }
- }
+}
 
 /**
  * 取得所有文章
@@ -199,27 +206,63 @@ add_action( 'wp_ajax_wpwx_ajax_setting_action', 'wpwx_ajax_setting_action' );
 function wpwx_ajax_setting_action() {
     global $wpdb; // this is how you get access to the database
 
-    $AppID    = $_POST['AppID'];
-    $AppSecret    = $_POST['AppSecret'];
-    $Token    = $_POST['Token'];
-    $nonce = $_POST['nonce'];    
+    $AppID      = $_POST['AppID'];
+    $AppSecret  = $_POST['AppSecret'];
+    $Token      = $_POST['Token'];
+    $IsDomestic = $_POST['IsDomestic'];
+    $nonce      = $_POST['nonce'];    
     if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
         // 先刪後增加
         delete_option( 'wpwx_AppID' );
         delete_option( 'wpwx_AppSecret' );
         delete_option( 'wpwx_Token' );
+        delete_option( 'wpwx_IsDomestic' );
         add_option( 'wpwx_AppID', $AppID );
         add_option( 'wpwx_AppSecret', $AppSecret );
         add_option( 'wpwx_Token', $Token );
-        $data = "{'AppID': $AppID,'AppSecret' : $AppSecret, ,'Token' : $Token}";
+        add_option( 'wpwx_IsDomestic', $IsDomestic );
+        //$data = "{'AppID': $AppID,'AppSecret' : $AppSecret, ,'Token' : $Token}";
         // 抓取微信素材資料, 放入 table: wpwx_post_media
         getAllMedias();
-        wp_send_json_success(array('code' => 200, 'data' => $data));        
+        wp_send_json_success(array('code' => 200, 'data' => $_POST));      
         echo 0;
     } else {
         wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
         echo - 1;
     }
+    wp_die(); // this is required to terminate immediately and return a proper response
+}
+
+// 刪除微信上的素材
+add_action( 'wp_ajax_wpwx_ajax_delMedia_action', 'wpwx_ajax_delMedia_action' );
+function wpwx_ajax_delMedia_action() {
+    global $wpdb,$app; // this is how you get access to the database
+
+    $nonce = $_POST['nonce'];
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
+        $table_name = $wpdb->prefix . "wpwx_post_media"; 
+        $query = "SELECT * FROM " . $table_name;
+        $results = $wpdb->get_results($query);
+
+        if ($results) {
+            foreach( $results as $media ) {
+                // 刪除微信上永久素材
+                $app->material->delete($media['media_id']);
+            }    
+            // 最後資料清空
+            $wpdb->query(
+                'DELETE  FROM '. $table_name
+            );    
+            wp_send_json_success(array('code' => 200, 'data' => $results , 'msg' => '均已刪除' ));
+        } else {
+            wp_send_json_success(array('code' => 200 ,'msg' => '沒有微信素材' ));
+        }
+
+    } else {
+        wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
+        echo - 1;
+    }
+    
     wp_die(); // this is required to terminate immediately and return a proper response
 }
 // 傳送圖文消息

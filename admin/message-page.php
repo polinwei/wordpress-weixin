@@ -64,7 +64,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         <template slot-scope="scope">
           <el-button @click="review(scope.row)" type="text" size="small">檢視</el-button>
           <el-button @click="openDialog(scope.$index,scope.row)" type="text" size="small">個別發送</el-button>
-          <el-button @click="openBrocastDialog(scope.$index,scope.row)" type="text" size="small">群發</el-button>
+          <el-button @click="openBrocastDialog(scope.$index,scope.row)" type="text" size="small">素材群發</el-button>
         </template>
       </el-table-column>
     </el-table>
