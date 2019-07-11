@@ -45,11 +45,10 @@ function wpwx_hook_function() {
 
 function wpwx_install() {
     global $wpdb,$app,$wpwx_db_version;
- 
-    $table_name = $wpdb->prefix . "wpwx_post_media"; 
-
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     $charset_collate = $wpdb->get_charset_collate();
-
+    // 素材資料
+    $table_name = $wpdb->prefix . "wpwx_post_media";
     $sql = "CREATE TABLE $table_name (
         id bigint(20) NOT NULL AUTO_INCREMENT,
         media_id tinytext NOT NULL,
@@ -61,8 +60,23 @@ function wpwx_install() {
         post_guid varchar(255) DEFAULT '' NOT NULL,
         PRIMARY KEY  (id)
     ) $charset_collate;";
+    dbDelta( $sql );
 
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+    // 微信粉絲
+    $table_name = $wpdb->prefix . "wpwx_openids";
+    $sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        openid tinytext NOT NULL,
+        nickname varchar(50) DEFAULT '' NOT NULL,
+        sex varchar(1) DEFAULT '' NOT NULL,
+        language varchar(10) DEFAULT '' NOT NULL,
+        city varchar(50) DEFAULT '' NOT NULL,
+        province varchar(100) DEFAULT '' NOT NULL,
+        country varchar(100) DEFAULT '' NOT NULL,
+        headimgurl varchar(255) DEFAULT '' NOT NULL,
+        subscribe_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
     dbDelta( $sql );
 
     add_option( "wpwx_db_version", $wpwx_db_version );
@@ -73,13 +87,14 @@ function wpwx_install() {
     global $wpdb,$app;
 
     $table_name = $wpdb->prefix . "wpwx_post_media"; 
-    
+    $mediaTotal = 0;
     // 資料先清空
     $wpdb->query(
         'DELETE  FROM '. $table_name
     );
 
     $list = $app->material->list('news');
+    $mediaTotal = $list['total_count'];
     foreach ($list['item'] as $news) {
         foreach ( $news['content']['news_item'] as $item ){
             $wpdb->insert( 
@@ -96,11 +111,18 @@ function wpwx_install() {
         }
     }
     $list = $app->material->list('image');
+    $mediaTotal += $list['total_count'];
     saveMediaInfo2Table($list,'image');
+
     $list = $app->material->list('video');
+    $mediaTotal += $list['total_count'];
     saveMediaInfo2Table($list,'video');
+
     $list = $app->material->list('voice');
+    $mediaTotal += $list['total_count'];
     saveMediaInfo2Table($list,'voice');
+
+    return $mediaTotal;
  }
 
 function saveMediaInfo2Table( $material_list , $type){
@@ -120,6 +142,41 @@ function saveMediaInfo2Table( $material_list , $type){
         );
     }
 }
+// 抓取微信粉絲資料
+function getAllOpenids() {
+    global $wpdb,$app;
+
+    // 微信粉絲
+    $table_name = $wpdb->prefix . "wpwx_openids";
+    // 資料先清空
+    $wpdb->query(
+        'DELETE  FROM '. $table_name
+    );
+    
+    $users = $app->user->list();
+
+    foreach ($users['data']['openid'] as $openid) {               
+        $user = $app->user->get( $openid );     
+        
+        $subscribe_time = date("Y/m/d", intval($user['subscribe_time']) );
+        $wpdb->insert( 
+            $table_name, 
+            array( 
+                'openid'    => $user['openid'],
+                'nickname'  => $user['nickname'],
+                'sex'       => $user['sex'],
+                'language'  => $user['language'],
+                'city'      => $user['city'],
+                'province'  => $user['province'],
+                'country'   => $user['country'],
+                'headimgurl'=> $user['headimgurl'],
+                'subscribe_time'=> $subscribe_time,
+            ) 
+        );
+    }
+    return $users['total'];
+}
+
 
 /**
  * 取得所有文章
@@ -222,8 +279,7 @@ function wpwx_ajax_setting_action() {
         add_option( 'wpwx_Token', $Token );
         add_option( 'wpwx_IsDomestic', $IsDomestic );
         //$data = "{'AppID': $AppID,'AppSecret' : $AppSecret, ,'Token' : $Token}";
-        // 抓取微信素材資料, 放入 table: wpwx_post_media
-        getAllMedias();
+        
         wp_send_json_success(array('code' => 200, 'data' => $_POST));      
         echo 0;
     } else {
@@ -247,7 +303,7 @@ function wpwx_ajax_delMedia_action() {
         if ($results) {
             foreach( $results as $media ) {
                 // 刪除微信上永久素材
-                $app->material->delete($media['media_id']);
+                $app->material->delete($media->media_id);
             }    
             // 最後資料清空
             $wpdb->query(
@@ -265,6 +321,89 @@ function wpwx_ajax_delMedia_action() {
     
     wp_die(); // this is required to terminate immediately and return a proper response
 }
+
+
+// 同步微信上的粉絲與素材
+add_action( 'wp_ajax_wpwx_ajax_syncwx_action', 'wpwx_ajax_syncwx_action' );
+function wpwx_ajax_syncwx_action() {
+    global $wpdb; // this is how you get access to the database
+    global $app;  // EasyWeChat app
+
+    $mediaTotal = 0 ;
+    $userTotal = 0;
+    $nonce = $_POST['nonce'];
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
+        $mediaTotal = getAllMedias();
+        $userTotal = getAllOpenids();
+        wp_send_json_success(array('code' => 200 ,'data' =>"{ 'mediaTotal':$mediaTotal, 'userTotal':$userTotal }" , 'msg' => '微信素材與粉絲同步完成' ));
+    } else {
+        wp_send_json_error(array('code' => 500, 'data' => $_POST, 'msg' => '錯誤的請求'));
+        echo - 1;
+    }
+    wp_die(); // this is required to terminate immediately and return a proper response 
+
+}
+// 從資料庫取得微信粉絲
+function dbGetAllOpenids() {
+    global $wpdb;
+    // 微信粉絲
+    $table_name = $wpdb->prefix . "wpwx_openids";
+    $query = "SELECT * FROM " . $table_name;
+    $users = $wpdb->get_results($query);
+    $openids='';
+    $userNames='';
+    foreach($users as $user){
+        $tmp = "'$user->openid'" ;
+        $openids .= $tmp . "," ;
+        $tmp = "'$user->nickname'" ;
+        $userNames .= $tmp . "," ;
+    }
+    return array($userNames, $openids);
+}
+
+// 線上取得微信粉絲
+function ewcGetAllOpenids(){
+    global $app;
+    $users = $app->user->list();
+    $openids='';
+    $userNames='';
+    foreach ($users['data']['openid'] as $openid) {               
+        $user = $app->user->get( $openid );
+        $tmp = "'$user[openid]'" ;
+        $openids .= $tmp . "," ;
+        $tmp = "'$user[nickname]'" ;
+        $userNames .= $tmp . "," ;
+    }
+    return array($userNames, $openids);
+}
+// 從資料庫取得所有微信粉絲
+function dbGetAllUsers(){
+    global $wpdb;
+    // 微信粉絲
+    $table_name = $wpdb->prefix . "wpwx_openids";
+    $query = "SELECT * FROM " . $table_name;
+    $result = $wpdb->get_results($query);
+    echo json_encode( $result);
+}
+
+// 線上取得所有微信粉絲
+function ewcGetAllUsers(){
+    global $app;
+    $userList = "";
+    $users = $app->user->list();
+
+    foreach ($users['data']['openid'] as $openid) {               
+        $user = $app->user->get( $openid );
+        $subscribe_time = date("Y/m/d", intval($user['subscribe_time']) );
+        $user_detail = "{ 'openid': '$user[openid]', 'nickname':'$user[nickname]', 'sex':'$user[sex]', 
+            'language':'$user[language]', 'city':'$user[city]', 'province':'$user[province]', 'country':'$user[country]',
+            'headimgurl':'$user[headimgurl]', 'subscribe_time':'$subscribe_time' }";
+        $userList .=  $user_detail . ",";
+    }
+
+    echo $userList;
+}
+
 // 傳送圖文消息
 add_action( 'wp_ajax_wpwx_ajax_ewcSendNews_action', 'wpwx_ajax_ewcSendNews_action' );
 function wpwx_ajax_ewcSendNews_action(){
@@ -371,38 +510,6 @@ function ewcSendNews($openid=''){
     $result = $app->customer_service->message($news)->to($openid)->send();
 }
 
-function ewcGetAllUsers(){
-    global $app;
-    $userList = "";
-    $users = $app->user->list();
-
-    foreach ($users['data']['openid'] as $openid) {               
-        $user = $app->user->get( $openid );
-        $subscribe_time = date("Y/m/d", intval($user['subscribe_time']) );
-        $user_detail = "{ 'openid': '$user[openid]', 'nickname':'$user[nickname]', 'sex':'$user[sex]', 
-            'language':'$user[language]', 'city':'$user[city]', 'province':'$user[province]', 'country':'$user[country]',
-            'headimgurl':'$user[headimgurl]', 'subscribe_time':'$subscribe_time' }";
-        $userList .=  $user_detail . ",";
-    }
-
-    echo $userList;
-}
-
-function ewcGetAllOpenids(){
-    global $app;
-    $users = $app->user->list();
-    $openids='';
-    $userNames='';
-    foreach ($users['data']['openid'] as $openid) {               
-        $user = $app->user->get( $openid );
-        $tmp = "'$user[openid]'" ;
-        $openids .= $tmp . "," ;
-        $tmp = "'$user[nickname]'" ;
-        $userNames .= $tmp . "," ;
-    }
-    return array($userNames, $openids);
-
-}
 
 /**
  * WeChatDeveloper function

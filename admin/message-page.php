@@ -148,8 +148,8 @@ var Main = {
 
       const generateData = _ => {
         const data = [];
-        const userNames = [<?php list($userNames, $openids) = ewcGetAllOpenids(); echo $userNames; ?>];
-        const openid = [<?php list($userNames, $openids) = ewcGetAllOpenids(); echo $openids; ?>];
+        const userNames = [<?php list($userNames, $openids) = dbGetAllOpenids(); echo $userNames; ?>];
+        const openid = [<?php list($userNames, $openids) = dbGetAllOpenids(); echo $openids; ?>];
         userNames.forEach((userName, index) => {
           data.push({
             label: userName,
@@ -163,8 +163,7 @@ var Main = {
       return {
         dialogVisible: false,
         post:{},
-        postTableData: <?php echo json_decode(getAllPost()) ?>,
-        wxTableData: [<?php ewcGetAllUsers(); ?>],
+        postTableData: <?php echo json_decode(getAllPost()) ?>,        
         openidList: generateData(),
         openidSelected: [],
         filterMethod(query, item) {

@@ -60,7 +60,7 @@ jQuery(document).ready(function ($) {
   var Main = {
       data() {
         return {
-          tableData: [<?php ewcGetAllUsers(); ?>]
+          tableData: <?php echo json_decode(dbGetAllUsers()); ?>
         }
       },
       methods: {
