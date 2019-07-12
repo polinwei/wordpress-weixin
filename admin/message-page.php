@@ -162,6 +162,7 @@ var Main = {
 
       return {
         dialogVisible: false,
+        IsDomestic:'<?php echo get_option( 'wpwx_IsDomestic'); ?>',
         post:{},
         postTableData: <?php echo json_decode(getAllPost()) ?>,        
         openidList: generateData(),

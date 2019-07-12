@@ -304,11 +304,11 @@ function wpwx_ajax_delMedia_action() {
             foreach( $results as $media ) {
                 // 刪除微信上永久素材
                 $app->material->delete($media->media_id);
-            }    
-            // 最後資料清空
-            $wpdb->query(
-                'DELETE  FROM '. $table_name
-            );    
+                // 刪除資料庫記錄
+                $wpdb->query(
+                    'DELETE  FROM '. $table_name . "WHERE media_id = " . $media->media_id
+                ); 
+            }
             wp_send_json_success(array('code' => 200, 'data' => $results , 'msg' => '均已刪除' ));
         } else {
             wp_send_json_success(array('code' => 200 ,'msg' => '沒有微信素材' ));
@@ -447,12 +447,17 @@ function wpwx_ajax_ewcSendMessage_action(){
     
     $user = $_POST['user'];
     $message = $_POST['message'];
+    $msgType = $_POST['msgType'];
     $openid = $user['openid'];
     $nonce = $_POST['nonce'];
 
     if ( wp_verify_nonce( $nonce, WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ) ) {
         $msg = new Text($message);
-        $result = $app->customer_service->message($msg)->to($openid)->send();
+        if ($msgType=='personal') {
+            $result = $app->customer_service->message($msg)->to($openid)->send();
+        } else {
+            $result = $app->broadcasting->sendMessage($msg);
+        }       
 
         wp_send_json_success( array('code' => 200, 'data' => $result  ) );        
         echo 0;

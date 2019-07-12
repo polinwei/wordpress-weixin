@@ -11,6 +11,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 
 <div id="app">
   <div class="wrap">
+  <el-button type="primary" @click="msgType='group'; sendMsg2WX(null)" type="text" size="small">發送訊息</el-button>
   <template>
     <el-table
       :data="tableData"
@@ -47,7 +48,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         fixed="right"
         label="操作">
         <template slot-scope="scope">
-          <el-button @click="sendMsg2WX(scope.row)" type="text" size="small">發送訊息</el-button>
+          <el-button @click="msgType='personal'; sendMsg2WX(scope.row)" type="text" size="small">發送訊息</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -60,6 +61,7 @@ jQuery(document).ready(function ($) {
   var Main = {
       data() {
         return {
+          msgType: 'personal',
           tableData: <?php echo json_decode(dbGetAllUsers()); ?>
         }
       },
@@ -79,7 +81,8 @@ jQuery(document).ready(function ($) {
             var data = {
                           'action': 'wpwx_ajax_ewcSendMessage_action',
                           'user': row,
-                          'message' : value,                        
+                          'message' : value,
+                          'msgType': this.msgType,                       
                           'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ); ?>'
               };
               $.post(ajaxurl, data, function (response) {                
