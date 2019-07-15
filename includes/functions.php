@@ -208,29 +208,6 @@ function getAllPost(){
     echo json_encode( $result);
   }
 
-// 海外微信帳號只能傳送 type:mpnew , 所以要先上傳
-function uploadArticle(){
-    global $app;
-    $post_material_image = $app->material->uploadImage(APP_ROOT_DIR . "/wp-content/uploads/2019/06/city-street-1246870_640-300x200.jpg");
-    
-    $post_material_thumb =  $app->material->uploadThumb(APP_ROOT_DIR . "/wp-content/uploads/2019/06/city-street-1246870_640-150x150.jpg");
-        
-    // 上传单篇图文
-    $article = new Article([
-        'title' => '網站第一篇文章',
-        'thumb_media_id' => $post_material_thumb['media_id'],
-        'author' => 'Polin WEI',
-        'content' => '歡迎使用 WordPress。這是這個網站的第一篇文章，試試為這篇文章進行編輯或直接刪除，然後開始撰寫新文章！',
-        'source_url' => 'http://im.globeunion.com/2019/06/19/hello-world/',
-        'show_cover' => 1, // 是否在文章内容显示封面图片
-
-    ]);
-    $post_material_article = $app->material->uploadArticle($article);
-    var_dump( $post_material_article) ;
-    
-    die;
-}
-
 /**
  * 建立 weixin token verified 的回覆頁面
  * 要先安裝 plugin: wp-router URL: https://github.com/jbrinley/WP-Router
@@ -407,7 +384,6 @@ function ewcGetAllUsers(){
 // 傳送圖文消息
 add_action( 'wp_ajax_wpwx_ajax_ewcSendNews_action', 'wpwx_ajax_ewcSendNews_action' );
 function wpwx_ajax_ewcSendNews_action(){
-
     global $wpdb; // this is how you get access to the database
     global $app;  // EasyWeChat app
     
@@ -434,7 +410,101 @@ function wpwx_ajax_ewcSendNews_action(){
         echo 0;
     } else {
         wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
-        echo - 1;
+        echo -1;
+    }
+    wp_die(); // this is required to terminate immediately and return a proper response
+}
+
+// 傳送圖文消息: 海外微信帳號只能傳送 type:mpnew , 所以要先上傳
+add_action( 'wp_ajax_wpwx_ajax_ewcSendMedia_action', 'wpwx_ajax_ewcSendMedia_action' );
+function wpwx_ajax_ewcSendMedia_action(){
+    global $wpdb; // this is how you get access to the database
+    global $app;  // EasyWeChat app
+    $table_name = $wpdb->prefix . "wpwx_post_media";
+    $media_id = '';
+
+    $post = $_POST['post'];
+    $openids = $_POST['openids'];
+    $nonce = $_POST['nonce'];
+    $mediaType = $_POST['mediaType'];
+
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ) ) {
+
+        // 先查是否已上傳
+        $query = "SELECT * FROM " . $table_name . " WHERE post_guid='$post[post_url]'";        
+        $result = $wpdb->get_results($query);
+
+        if ( count($result)==0 ){
+            // 上傳圖片到微信
+            $post_material_thumb =  $app->material->uploadThumb(APP_ROOT_DIR . '/wp-content/uploads/'.$post['image'] );        
+            // 寫入資料庫
+            $wpdb->insert( 
+                $table_name, 
+                array( 
+                    'media_id' => $post_material_thumb['media_id'], 
+                    'media_type' => 'image',
+                    'media_name' => $post['image'],
+                    'update_time' => $post['post_date'],
+                    'media_url' => $post_material_thumb['url'],
+                ) 
+            );        
+            
+            // 文章資料上傳準備
+            $article = new Article([
+                'title' => $post['post_title'],
+                'thumb_media_id' => $post_material_thumb['media_id'],
+                'author' => $post['post_author'],
+                'content' => strip_tags($post['post_content']),
+                'source_url' => $post['post_url'],
+                'show_cover' => 1, // 是否在文章内容显示封面图片
+        
+            ]);
+            // 上傳到微信
+            $post_material_article = $app->material->uploadArticle($article);
+            // 取得此篇文章在微信的資訊
+            $resource = $app->material->get($post_material_article["media_id"]);
+            // 寫入資料庫
+            foreach ($resource["news_item"] as $item ){
+                $wpdb->insert( 
+                    $table_name, 
+                    array( 
+                        'media_id' => $post_material_article["media_id"], 
+                        'media_type' => 'news', 
+                        'update_time' => $post['post_date'],
+                        'media_name' => $item['title'],
+                        'media_url' => $item['url'],
+                        'post_guid' => $item['content_source_url'],
+                    ) 
+                );
+            };
+            $media_id = $post_material_article["media_id"];
+        } else {
+            $media_id = $result[0]->media_id;
+        }
+
+
+        switch ($mediaType) {
+            case 'mediaPreview':
+                foreach ($openids as $user) {
+                    $app->broadcasting->previewNews($media_id, $user['openid']);
+                }                
+                break;
+            case 'mediaPersonal':
+                foreach ($openids as $openid) {
+                    $app->broadcasting->sendNews($media_id, $user['openid']);
+                }
+                break;
+            case 'mediaGroup':
+                $app->broadcasting->sendNews($media_id);
+                break;
+        }
+
+        wp_send_json_success( array('code' => 200, 'data' => $post_material_article  ) );        
+        echo 0;
+
+    } else {
+        wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
+        echo -1;
     }
     wp_die(); // this is required to terminate immediately and return a proper response
 }

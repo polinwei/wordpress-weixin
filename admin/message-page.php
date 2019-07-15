@@ -20,7 +20,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         fixed
         prop="post_date"
         label="日期"
-        width="150">
+        width="160">
       </el-table-column>
       <el-table-column prop="image" label="image" width="120">
         <template scope="scope">            
@@ -63,7 +63,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         width="200">
         <template slot-scope="scope">
           <el-button @click="review(scope.row)" type="text" size="small">檢視</el-button>          
-          <el-button v-if="IsDomestic=='true'" @click="openDialog(scope.$index,scope.row)" type="text" size="small">文章個別發送</el-button>          
+          <el-button v-if="IsDomestic" @click="openDialog(scope.$index,scope.row)" type="text" size="small">文章個別發送</el-button>          
           <el-button @click="mediaType='mediaPreview'; openMediaDialog(scope.$index,scope.row)" type="text" size="small">素材預覽</el-button>
           <el-button @click="mediaType='mediaPersonal'; openMediaDialog(scope.$index,scope.row)" type="text" size="small">素材個發</el-button>
           <el-button @click="mediaType='mediaGroup'; openMediaDialog(scope.$index,scope.row)" type="text" size="small">素材群發</el-button>
@@ -170,6 +170,25 @@ var Main = {
       },
       handleCloseMediaDialog(done) {
         console.log("before close Dedia Dialog");
+        var post = this.post;
+        var openidList = this.openidList;        
+        var openidSelected = this.openidSelected;
+        var openids=[];
+        openidSelected.forEach(function(item, index, array){
+          openids.push(openidList[item]);
+        });
+        var mediaType = this.mediaType;        
+        var data = {
+                'action': 'wpwx_ajax_ewcSendMedia_action',
+                'post': post, 
+                'openids': openids,
+                'mediaType': mediaType,
+                'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ); ?>'
+        };
+        $.post(ajaxurl, data, function (response) {                
+            alert('Send success!!' );                 
+        })
+        .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
       },
       openMediaDialog(index,row){
         console.log(index, row);//这里可打印出每行的内容 
@@ -198,7 +217,7 @@ var Main = {
         dialogVisible: false,
         dialogMediaVisible: false,
         mediaType: 'mediaPreview',
-        IsDomestic:'<?php echo get_option( 'wpwx_IsDomestic'); ?>',
+        IsDomestic:<?php echo get_option( 'wpwx_IsDomestic')=='true'?'true':'false'; ?>,
         post:{},
         postTableData: <?php echo json_decode(getAllPost()) ?>,        
         openidList: generateData(),

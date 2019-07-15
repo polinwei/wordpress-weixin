@@ -76,7 +76,7 @@ jQuery(document).ready(function ($) {
       this.settingForm.AppID='<?php echo get_option( 'wpwx_AppID'); ?>';
       this.settingForm.AppSecret='<?php echo get_option( 'wpwx_AppSecret'); ?>';
       this.settingForm.Token='<?php echo get_option( 'wpwx_Token'); ?>';
-      this.settingForm.IsDomestic='<?php echo get_option( 'wpwx_IsDomestic'); ?>';
+      this.settingForm.IsDomestic=<?php echo get_option( 'wpwx_IsDomestic')=='true'?'true':'false'; ?>;
     },
     methods: {
       submitForm(formName) {

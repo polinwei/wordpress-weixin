@@ -21,7 +21,10 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         fixed
         prop="subscribe_time"
         label="觀注日期"
-        width="150">
+        width="100">
+        <template scope="scope">
+          {{ scope.row.subscribe_time | formatDate}}
+        </template>
       </el-table-column>
       <el-table-column
         prop="nickname"
@@ -57,7 +60,14 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 </div>
 
 <script>
-jQuery(document).ready(function ($) {
+jQuery(document).ready(function ($) {  
+
+  Vue.filter('formatDate', function(value) {
+    if (value) {
+      return moment(String(value)).format('YYYY/MM/DD')
+    }
+  });
+
   var Main = {
       data() {
         return {
