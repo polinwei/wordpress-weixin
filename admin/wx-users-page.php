@@ -11,7 +11,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 
 <div id="app">
   <div class="wrap">
-  <el-button type="primary" @click="msgType='group'; sendMsg2WX(null)" type="text" size="small">發送訊息</el-button>
+  <el-button type="primary" @click="msgType='group'; sendMsg2WX(null)" type="text" size="small">群發訊息</el-button>
   <template>
     <el-table
       :data="tableData"

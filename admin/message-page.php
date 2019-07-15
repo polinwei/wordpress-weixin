@@ -62,9 +62,11 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         label="操作"
         width="200">
         <template slot-scope="scope">
-          <el-button @click="review(scope.row)" type="text" size="small">檢視</el-button>
-          <el-button @click="openDialog(scope.$index,scope.row)" type="text" size="small">個別發送</el-button>
-          <el-button @click="openBrocastDialog(scope.$index,scope.row)" type="text" size="small">素材群發</el-button>
+          <el-button @click="review(scope.row)" type="text" size="small">檢視</el-button>          
+          <el-button v-if="IsDomestic=='true'" @click="openDialog(scope.$index,scope.row)" type="text" size="small">文章個別發送</el-button>          
+          <el-button @click="mediaType='mediaPreview'; openMediaDialog(scope.$index,scope.row)" type="text" size="small">素材預覽</el-button>
+          <el-button @click="mediaType='mediaPersonal'; openMediaDialog(scope.$index,scope.row)" type="text" size="small">素材個發</el-button>
+          <el-button @click="mediaType='mediaGroup'; openMediaDialog(scope.$index,scope.row)" type="text" size="small">素材群發</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -96,6 +98,30 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
     </span>
   </el-dialog>
 
+  <el-dialog
+    title="提示"
+    width="50%"
+    :show-close=false
+    :visible.sync="dialogMediaVisible"    
+    :before-close="handleCloseMediaDialog"
+    center>  
+
+    <template>
+      <el-transfer
+        filterable
+        :filter-method="filterMethod"
+        filter-placeholder="請輸入微信名字"
+        v-model="openidSelected"
+        :data="openidList"
+        :titles="['微信粉絲', '發送清單']">
+      </el-transfer>
+    </template>
+
+    <span slot="footer" class="dialog-footer">
+      <el-button @click="dialogMediaVisible = false">取消</el-button>
+      <el-button type="primary" @click="dialogMediaVisible = false; handleCloseMediaDialog()">確認發送</el-button>
+    </span>
+  </el-dialog>
 
 </div>
 
@@ -141,6 +167,14 @@ var Main = {
         //console.log(index, row);//这里可打印出每行的内容 
         this.dialogVisible = true;
         this.post=row;
+      },
+      handleCloseMediaDialog(done) {
+        console.log("before close Dedia Dialog");
+      },
+      openMediaDialog(index,row){
+        console.log(index, row);//这里可打印出每行的内容 
+        this.dialogMediaVisible = true;
+        this.post=row;
       }
     },
 
@@ -162,6 +196,8 @@ var Main = {
 
       return {
         dialogVisible: false,
+        dialogMediaVisible: false,
+        mediaType: 'mediaPreview',
         IsDomestic:'<?php echo get_option( 'wpwx_IsDomestic'); ?>',
         post:{},
         postTableData: <?php echo json_decode(getAllPost()) ?>,        
