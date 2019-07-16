@@ -169,7 +169,7 @@ var Main = {
         this.post=row;
       },
       handleCloseMediaDialog(done) {
-        console.log("before close Dedia Dialog");
+        //console.log("before close Dedia Dialog");
         var post = this.post;
         var openidList = this.openidList;        
         var openidSelected = this.openidSelected;
@@ -191,9 +191,14 @@ var Main = {
         .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
       },
       openMediaDialog(index,row){
-        console.log(index, row);//这里可打印出每行的内容 
-        this.dialogMediaVisible = true;
+        //console.log(index, row);//这里可打印出每行的内容
         this.post=row;
+        if (this.mediaType=='mediaGroup') {
+          this.handleCloseMediaDialog();
+        } else {
+          this.dialogMediaVisible = true;          
+        }
+        
       }
     },
 

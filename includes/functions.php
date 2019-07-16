@@ -490,9 +490,11 @@ function wpwx_ajax_ewcSendMedia_action(){
                 }                
                 break;
             case 'mediaPersonal':
-                foreach ($openids as $openid) {
-                    $app->broadcasting->sendNews($media_id, $user['openid']);
+                $ids = array();
+                foreach ($openids as $user) {
+                   array_push($ids, $user['openid']);
                 }
+                $app->broadcasting->sendNews($media_id, $ids);
                 break;
             case 'mediaGroup':
                 $app->broadcasting->sendNews($media_id);
