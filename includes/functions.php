@@ -182,8 +182,11 @@ function getAllOpenids() {
  * 取得所有文章
  */
 function getAllPost(){
-    global $wpdb; 
+    global $wpdb,$wp_roles; 
     $current_user = wp_get_current_user();
+    $user_roles = $current_user->roles;
+    $user_role = array_shift($user_roles);
+
     $query = "SELECT DISTINCT id, post_date, post_title, post_content, guid as post_url
               ,(SELECT display_name FROM ".$wpdb->prefix ."users WHERE ".$wpdb->prefix ."users.id =  ".$wpdb->prefix ."posts.post_author) AS 'post_author'
               ,(SELECT meta_value FROM ".$wpdb->prefix ."postmeta WHERE ".$wpdb->prefix ."postmeta.meta_key='_wp_attached_file' and  ".$wpdb->prefix ."postmeta.post_id=
@@ -202,7 +205,7 @@ function getAllPost(){
               FROM  ".$wpdb->prefix ."posts
               WHERE post_type = 'post' 
               AND post_status = 'publish' ";
-    if ( strtolower( $current_user->roles[0] ) == 'author' ){        
+    if ( $wp_roles->roles[ $user_role ]['name'] == 'Author' ){        
         $query .= " AND post_author='$current_user->ID' ";
     }
     $query .= " ORDER BY id,categories,post_date";

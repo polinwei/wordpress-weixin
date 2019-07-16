@@ -22,7 +22,7 @@ define( 'WPWX_PLUGIN', __FILE__ );
 define( 'WPWX_PLUGIN_BASENAME', plugin_basename( WPWX_PLUGIN ));
 define( 'WPWX_PLUGIN_NAME',	trim( dirname( WPWX_PLUGIN_BASENAME ), '/' ) );
 define( 'WPWX_PLUGIN_DIR', untrailingslashit( dirname( WPWX_PLUGIN ) ) );
-define( 'APP_ROOT_DIR', substr(WPWX_PLUGIN,0,stripos(WPWX_PLUGIN,"\wp-content")) );
+define( 'APP_ROOT_DIR', substr(WPWX_PLUGIN,0,stripos(WPWX_PLUGIN,"wp-content")-1) );
 
 // Deprecated, not used in the plugin core. Use wpwx_plugin_url() instead that in functions.php.
 define( 'WPWX_PLUGIN_URL',  untrailingslashit( plugins_url( '', WPWX_PLUGIN ) ) );
