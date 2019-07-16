@@ -183,6 +183,7 @@ function getAllOpenids() {
  */
 function getAllPost(){
     global $wpdb; 
+    $current_user = wp_get_current_user();
     $query = "SELECT DISTINCT id, post_date, post_title, post_content, guid as post_url
               ,(SELECT display_name FROM ".$wpdb->prefix ."users WHERE ".$wpdb->prefix ."users.id =  ".$wpdb->prefix ."posts.post_author) AS 'post_author'
               ,(SELECT meta_value FROM ".$wpdb->prefix ."postmeta WHERE ".$wpdb->prefix ."postmeta.meta_key='_wp_attached_file' and  ".$wpdb->prefix ."postmeta.post_id=
@@ -200,10 +201,12 @@ function getAllPost(){
                 ) AS 'Tags'
               FROM  ".$wpdb->prefix ."posts
               WHERE post_type = 'post' 
-              AND post_status = 'publish'
-              ORDER BY
-              id,categories,post_date";
-  
+              AND post_status = 'publish' ";
+    if ( strtolower( $current_user->roles[0] ) == 'author' ){        
+        $query .= " AND post_author='$current_user->ID' ";
+    }
+    $query .= " ORDER BY id,categories,post_date";
+    
     $result = $wpdb->get_results($query);
     echo json_encode( $result);
   }
@@ -473,6 +476,7 @@ function wpwx_ajax_ewcSendMedia_action(){
                         'update_time' => $post['post_date'],
                         'media_name' => $item['title'],
                         'media_url' => $item['url'],
+                        'post_id' => $post['id'],
                         'post_guid' => $item['content_source_url'],
                     ) 
                 );
