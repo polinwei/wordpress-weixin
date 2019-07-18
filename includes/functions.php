@@ -177,6 +177,16 @@ function getAllOpenids() {
     return $users['total'];
 }
 
+// 從資料庫中抓取微信素材資料
+function getAllMediasFromDB() {
+    global $wpdb,$app;
+
+    $table_name = $wpdb->prefix . "wpwx_post_media"; 
+    $query = "SELECT * FROM " . $table_name;
+    $result = $wpdb->get_results($query);
+    echo json_encode( $result);
+
+}
 
 /**
  * 取得所有文章
@@ -272,7 +282,7 @@ function wpwx_ajax_setting_action() {
     wp_die(); // this is required to terminate immediately and return a proper response
 }
 
-// 刪除微信上的素材
+// 刪除微信上所有的素材
 add_action( 'wp_ajax_wpwx_ajax_delMedia_action', 'wpwx_ajax_delMedia_action' );
 function wpwx_ajax_delMedia_action() {
     global $wpdb,$app; // this is how you get access to the database
@@ -289,22 +299,50 @@ function wpwx_ajax_delMedia_action() {
                 $app->material->delete($media->media_id);
                 // 刪除資料庫記錄
                 $wpdb->query(
-                    'DELETE  FROM '. $table_name . "WHERE media_id = " . $media->media_id
+                    'DELETE  FROM '. $table_name . " WHERE media_id = " . $media->media_id
                 ); 
             }
             wp_send_json_success(array('code' => 200, 'data' => $results , 'msg' => '均已刪除' ));
         } else {
             wp_send_json_success(array('code' => 200 ,'msg' => '沒有微信素材' ));
         }
+        echo 0;
 
     } else {
-        wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
-        echo - 1;
+        wp_send_json_error(array('code' => 500, 'data' => $_POST, 'msg' => '錯誤的請求'));
+        echo -1;
     }
     
     wp_die(); // this is required to terminate immediately and return a proper response
 }
 
+// 刪除微信上單一筆素材
+add_action( 'wp_ajax_wpwx_ajax_delOneMedia_action', 'wpwx_ajax_delOneMedia_action' );
+function wpwx_ajax_delOneMedia_action() {
+    global $wpdb,$app; // this is how you get access to the database
+
+    $nonce = $_POST['nonce'];
+    $media = $_POST['media'];
+
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
+        $table_name = $wpdb->prefix . "wpwx_post_media"; 
+        // 刪除微信上永久素材
+        $sendResult = $app->material->delete($media['media_id']);
+        // 刪除資料庫記錄
+        $wpdb->query(
+            "DELETE FROM $table_name  WHERE media_id ='" . $media['media_id'] . "'"
+        );
+        
+        $query = "SELECT * FROM " . $table_name;
+        $mediaResult = $wpdb->get_results($query);
+        wp_send_json_success(array('code' => 200, 'mediaData' => $mediaResult, 'data' => $sendResult , 'msg' => $media['media_id'].'-已刪除-' ));
+        echo 0;
+    } else {
+        wp_send_json_error(array('code' => 500, 'data' => $_POST, 'msg' => '錯誤的請求'));
+        echo -1;
+    }
+    wp_die(); // this is required to terminate immediately and return a proper response
+}
 
 // 同步微信上的粉絲與素材
 add_action( 'wp_ajax_wpwx_ajax_syncwx_action', 'wpwx_ajax_syncwx_action' );
@@ -493,7 +531,7 @@ function wpwx_ajax_ewcSendMedia_action(){
         switch ($mediaType) {
             case 'mediaPreview':
                 foreach ($openids as $user) {
-                    $app->broadcasting->previewNews($media_id, $user['openid']);
+                    $sendResult = $app->broadcasting->previewNews($media_id, $user['openid']);
                 }                
                 break;
             case 'mediaPersonal':
@@ -501,18 +539,18 @@ function wpwx_ajax_ewcSendMedia_action(){
                 foreach ($openids as $user) {
                    array_push($ids, $user['openid']);
                 }
-                $app->broadcasting->sendNews($media_id, $ids);
+                $sendResult = $app->broadcasting->sendNews($media_id, $ids);
                 break;
             case 'mediaGroup':
-                $app->broadcasting->sendNews($media_id);
+                $sendResult = $app->broadcasting->sendNews($media_id);
                 break;
         }
 
-        wp_send_json_success( array('code' => 200, 'data' => $post_material_article  ) );        
+        wp_send_json_success( array('code' => 200, 'data' => $sendResult  ) );        
         echo 0;
 
     } else {
-        wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
+        wp_send_json_error(array('code' => 500, 'data' => $_POST, 'msg' => '錯誤的請求'));
         echo -1;
     }
     wp_die(); // this is required to terminate immediately and return a proper response
@@ -533,16 +571,16 @@ function wpwx_ajax_ewcSendMessage_action(){
     if ( wp_verify_nonce( $nonce, WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ) ) {
         $msg = new Text($message);
         if ($msgType=='personal') {
-            $result = $app->customer_service->message($msg)->to($openid)->send();
+            $sendResult = $app->customer_service->message($msg)->to($openid)->send();
         } else {
-            $result = $app->broadcasting->sendMessage($msg);
+            $sendResult = $app->broadcasting->sendMessage($msg);
         }       
 
-        wp_send_json_success( array('code' => 200, 'data' => $result  ) );        
+        wp_send_json_success( array('code' => 200, 'data' => $sendResult  ) );        
         echo 0;
 
     }else {
-        wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
+        wp_send_json_error(array('code' => 500, 'data' => $_POST, 'msg' => '錯誤的請求'));
         echo - 1;
     }
     wp_die(); // this is required to terminate immediately and return a proper response

@@ -1,21 +1,13 @@
 <?php
 defined( 'ABSPATH' ) or die( 'You cannot be here.' );
-//uploadArticle();
 global $app;
-//$list = $app->material->list('news');
-//$app->broadcasting->previewNews('83H2yFYsDryniv_bZEZ7eCxk7DCdOYJOWbS0RyaY448', 'ob9Ek1V2nZrK8VVptu89XQgrCvvE');
-//var_dump($list);
-//$stats = $app->material->stats();
-//var_dump($stats);
-
-
 require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 ?>
 
 <div id="app">
   <div class="wrap">
   <template>
-    <el-table :data="postTableData" border style="width: 100%">
+    <el-table :data="postTableData" border style="width: 100%"  v-loading.fullscreen.lock="fullscreenLoading">
       <el-table-column 
         fixed
         prop="post_date"
@@ -170,6 +162,7 @@ var Main = {
       },
       handleCloseMediaDialog(done) {
         //console.log("before close Dedia Dialog");
+
         var post = this.post;
         var openidList = this.openidList;        
         var openidSelected = this.openidSelected;
@@ -177,7 +170,17 @@ var Main = {
         openidSelected.forEach(function(item, index, array){
           openids.push(openidList[item]);
         });
-        var mediaType = this.mediaType;        
+        var mediaType = this.mediaType;
+        if (mediaType=='mediaPersonal' && openids.length<2) {          
+          alert("素材個發必需兩人以上");
+          return false;
+        }
+        if (mediaType!='mediaGroup' && openids.length==0){
+          return false;
+        }
+          
+        // 傳送資料時, 禁止使用者再按其它按鍵        
+        this.fullscreenLoading = true; 
         var data = {
                 'action': 'wpwx_ajax_ewcSendMedia_action',
                 'post': post, 
@@ -185,10 +188,12 @@ var Main = {
                 'mediaType': mediaType,
                 'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_WEIXIN_ACTION_NONCE . date('ymdH') ); ?>'
         };
-        $.post(ajaxurl, data, function (response) {                
+        $.post(ajaxurl, data, function (response) {
+            wxMedia.fullscreenLoading = false;                
             alert('Send success!!' );                 
         })
-        .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+        .error(function(response) { wxMedia.fullscreenLoading = false; alert("Oops! Sorry error occurred! Internet issue."); });
+
       },
       openMediaDialog(index,row){
         //console.log(index, row);//这里可打印出每行的内容
@@ -223,6 +228,7 @@ var Main = {
         dialogMediaVisible: false,
         mediaType: 'mediaPreview',
         IsDomestic:<?php echo get_option( 'wpwx_IsDomestic')=='true'?'true':'false'; ?>,
+        fullscreenLoading: false,
         post:{},
         postTableData: <?php echo json_decode(getAllPost()) ?>,        
         openidList: generateData(),
@@ -234,6 +240,6 @@ var Main = {
     }
   }
   var Ctor = Vue.extend(Main)
-  new Ctor().$mount('#app')
+  var wxMedia = new Ctor().$mount('#app')
 });
 </script>
