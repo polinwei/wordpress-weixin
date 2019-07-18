@@ -10,7 +10,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 
 <div id="wxSetting">
 <div class="wrap">
-  <el-tabs type="border-card">
+  <el-tabs type="border-card" v-loading.fullscreen.lock="fullscreenLoading">
     <el-tab-pane>
       <span slot="label"><i class="el-icon-setting"></i> 設定 (Basic Settings)</span>
       <el-form :model="settingForm" :rules="rules" ref="settingForm" label-width="100px" >
@@ -52,11 +52,12 @@ jQuery(document).ready(function ($) {
   var wxSetting = {
     data() {
       return {
+        fullscreenLoading: false,
         settingForm: {
           AppID: '',
           AppSecret: '',
           Token: '',
-          IsDomestic: true,        
+          IsDomestic: true,                  
         },
         rules: {
           AppID: [
@@ -85,7 +86,8 @@ jQuery(document).ready(function ($) {
             /* 送出Post */
             //alert('submit!'+this.settingForm.AppID+'-'+this.settingForm.AppSecret);
             // '<?php echo WPWX_PLUGIN_URL."/admin/ajax-setting.php" ?>'
-            // ajaxurl
+            // 傳送資料時, 禁止使用者再按其它按鍵        
+            this.fullscreenLoading = true;
             var data = {
                         'action': 'wpwx_ajax_setting_action',
                         'AppID': this.settingForm.AppID, 
@@ -94,10 +96,11 @@ jQuery(document).ready(function ($) {
                         'IsDomestic': this.settingForm.IsDomestic,
                         'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
             };
-            $.post(ajaxurl, data, function (response) {                
+            $.post(ajaxurl, data, function (response) {
+                vueSetting.fullscreenLoading = false;                
                 alert('Send success!!' );                 
             })
-            .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+            .error(function(response) { vueSetting.fullscreenLoading = false; alert("Oops! Sorry error occurred! Internet issue."); });
              
           } else {
             console.log('error submit!!');
@@ -110,14 +113,17 @@ jQuery(document).ready(function ($) {
       },
       syncWx(){
         console.log('syncWx');
+        // 傳送資料時, 禁止使用者再按其它按鍵        
+        this.fullscreenLoading = true;
         var data = {
                       'action': 'wpwx_ajax_syncwx_action',
                       'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
           };
-          $.post(ajaxurl, data, function (response) {                
+          $.post(ajaxurl, data, function (response) {
+              vueSetting.fullscreenLoading = false;                
               alert('Synchronize Success!!' );                
           })
-          .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+          .error(function(response) { vueSetting.fullscreenLoading = false; alert("Oops! Sorry error occurred! Internet issue."); });
       },
 		  delMedia(){
 		  	console.log('delMedia');
@@ -128,14 +134,17 @@ jQuery(document).ready(function ($) {
           cancelButtonText: '取消'
         })
         .then(() => {
+          // 傳送資料時, 禁止使用者再按其它按鍵        
+          this.fullscreenLoading = true;
           var data = {
                       'action': 'wpwx_ajax_delMedia_action',
                       'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
           };
-          $.post(ajaxurl, data, function (response) {                
+          $.post(ajaxurl, data, function (response) {
+              vueSetting.fullscreenLoading = false;                
               alert('Deleted Success!!' );                
           })
-          .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+          .error(function(response) { vueSetting.fullscreenLoading = false; alert("Oops! Sorry error occurred! Internet issue."); });
 
         })
         .catch(action => {
