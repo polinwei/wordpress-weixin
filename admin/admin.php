@@ -49,7 +49,15 @@ function wpwx_admin_menu() {
     'manage_options', 
     'weixin-wechat-setting', 
     'wpwx_admin_setting_page' );
-    
+
+  add_submenu_page( 
+    'weixin-wechat', 
+    __('Weixin Wechat', 'wpwx'), 
+    __('微信選單設定', 'wpwx'), 
+    'manage_options', 
+    'weixin-wechat-menu', 
+    'wpwx_admin_menu_page' );    
+
   add_submenu_page( 
     'weixin-wechat', 
     __('Weixin Wechat', 'wpwx'), 
@@ -75,6 +83,10 @@ function wpwx_admin_setting_page(){
 
 function wpwx_admin_media_page(){
   include("media-page.php");
+}
+
+function wpwx_admin_menu_page(){
+  include("menu-page.php");
 }
 
 define( 'MY_AJAX_EXAMPLE_ACTION_NONCE', 'my-ajax-example-action-' );
