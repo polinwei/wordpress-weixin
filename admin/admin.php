@@ -20,7 +20,7 @@ function wpwx_admin_menu() {
     'weixin-wechat', 
     __('Weixin Wechat', 'wpwx'), 
     __('文章發佈到微信', 'wpwx'), 
-    '2', 
+    'author', 
     'weixin-wechat-message', 
     'wpwx_admin_message_page' );
 
@@ -29,7 +29,7 @@ function wpwx_admin_menu() {
     'weixin-wechat', 
     __('Weixin Wechat', 'wpwx'), 
     __('訊息發給微信粉絲', 'wpwx'), 
-    '2', 
+    'author', 
     'weixin-wechat-users', 
     'wpwx_admin_weixin_users_page' );     
 
