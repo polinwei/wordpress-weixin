@@ -3,10 +3,12 @@ defined( 'ABSPATH' ) or die( 'You cannot be here.' );
 
 add_action( 'admin_menu', 'wpwx_admin_menu' );
 function wpwx_admin_menu() {
-	global $_wp_last_object_menu;
+  //建立一個客製化的群組 custom_menu_access: author + administrator
+  $author = get_role('author');
+  $author->add_cap('custom_menu_access');
+  $admin = get_role('administrator');
+  $admin->add_cap('custom_menu_access');
 
-  $_wp_last_object_menu++;
-  
   add_menu_page(
     __('Weixin Wechat', 'wpwx'), 
     __('微信訊息整合', 'wpwx'),
@@ -20,7 +22,7 @@ function wpwx_admin_menu() {
     'weixin-wechat', 
     __('Weixin Wechat', 'wpwx'), 
     __('文章發佈到微信', 'wpwx'), 
-    'author', 
+    'custom_menu_access', 
     'weixin-wechat-message', 
     'wpwx_admin_message_page' );
 
@@ -29,7 +31,7 @@ function wpwx_admin_menu() {
     'weixin-wechat', 
     __('Weixin Wechat', 'wpwx'), 
     __('訊息發給微信粉絲', 'wpwx'), 
-    'author', 
+    'custom_menu_access', 
     'weixin-wechat-users', 
     'wpwx_admin_weixin_users_page' );     
 
