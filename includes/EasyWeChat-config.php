@@ -1,5 +1,5 @@
 <?php
-
+defined( 'ABSPATH' ) or die( 'You cannot be here.' );
 return [
     /**
      * 账号基本信息，请从微信公众平台/开放平台获取

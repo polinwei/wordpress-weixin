@@ -254,12 +254,13 @@ function wpwxtoken_route_callback( ) {
 add_action( 'wp_ajax_wpwx_ajax_setting_action', 'wpwx_ajax_setting_action' );
 // add_action('wp_ajax_nopriv_wpwx_ajax_setting_action', 'wpwx_ajax_setting_action'); //不需登入即可使用
 function wpwx_ajax_setting_action() {
-    global $wpdb; // this is how you get access to the database
+    global $wpdb,$app; // this is how you get access to the database
 
     $AppID      = $_POST['AppID'];
     $AppSecret  = $_POST['AppSecret'];
     $Token      = $_POST['Token'];
     $IsDomestic = $_POST['IsDomestic'];
+    $Welcome    = $_POST['Welcome'];
     $nonce      = $_POST['nonce'];    
     if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
         // 先刪後增加
@@ -271,9 +272,20 @@ function wpwx_ajax_setting_action() {
         add_option( 'wpwx_AppSecret', $AppSecret );
         add_option( 'wpwx_Token', $Token );
         add_option( 'wpwx_IsDomestic', $IsDomestic );
-        //$data = "{'AppID': $AppID,'AppSecret' : $AppSecret, ,'Token' : $Token}";
+        if (empty($Welcome)) {
+            delete_option( 'wpwx_Welcome' );
+            $app->server->push(function ($message) {
+                return null;
+            });
+        } else {
+            add_option( 'wpwx_Welcome', $Welcome );
+            $app->server->push(function ($message) {               
+                return $Welcome;
+            });                        
+        }
+        $response = $app->server->serve();  
         
-        wp_send_json_success(array('code' => 200, 'data' => $_POST));      
+        wp_send_json_success(array('code' => 200, 'data' => $_POST, 'response' => $response ));      
         echo 0;
     } else {
         wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));

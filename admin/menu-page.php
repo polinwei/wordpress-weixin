@@ -4,7 +4,7 @@ global $app;
 require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 ?>
 
-<div id="app">
+<div id="app" v-loading.fullscreen.lock="fullscreenLoading">
   <div class="wrap">
     <el-button type="primary" @click="menuType='create';createWxMenu()" type="text" size="small">建立Menu</el-button>
     <el-button type="warning" @click="menuType='delete';deleteWxMenu()" type="text" size="small">清除Menu</el-button>
@@ -35,6 +35,7 @@ jQuery(document).ready(function ($) {
     data() {
       //console.log('data');
       return {
+        fullscreenLoading: false,
         activeIndex: '1',
         menuType: 'delete',
         termName: 'wx_menu',
@@ -53,17 +54,20 @@ jQuery(document).ready(function ($) {
         this.$confirm('確認依顯示建立Menu', '提示', {
             confirmButtonText: '確定',
             cancelButtonText: '取消',
-          }).then(({ value }) => {            
+          }).then(({ value }) => {
+            // 傳送資料時, 禁止使用者再按其它按鍵        
+            this.fullscreenLoading = true;            
             var data = {
                           'action': 'wpwx_ajax_ewcWxMenu_action',
                           'menuType': this.menuType,
                           'termName': this.termName,                      
                           'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
               };
-              $.post(ajaxurl, data, function (response) {                
+              $.post(ajaxurl, data, function (response) { 
+                  wxMenu.fullscreenLoading = false;               
                   alert('Send success!!' );                 
               })
-              .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+              .error(function(response) { wxMenu.fullscreenLoading = false; alert("Oops! Sorry error occurred! Internet issue."); });
           }).catch(() => {
             this.$message({
               type: 'warning',
@@ -76,17 +80,20 @@ jQuery(document).ready(function ($) {
         this.$confirm('確認要清除Menu', '提示', {
             confirmButtonText: '確定',
             cancelButtonText: '取消',
-          }).then(({ value }) => {            
+          }).then(({ value }) => {
+            // 傳送資料時, 禁止使用者再按其它按鍵        
+            this.fullscreenLoading = true;            
             var data = {
                           'action': 'wpwx_ajax_ewcWxMenu_action',
                           'menuType': this.menuType,
                           'termName': this.termName,                       
                           'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
               };
-              $.post(ajaxurl, data, function (response) {                
+              $.post(ajaxurl, data, function (response) {
+                  wxMenu.fullscreenLoading = false;                
                   alert('Send success!!' );                 
               })
-              .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+              .error(function(response) { wxMenu.fullscreenLoading = false; alert("Oops! Sorry error occurred! Internet issue."); });
           }).catch(() => {
             this.$message({
               type: 'warning',

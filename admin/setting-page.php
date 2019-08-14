@@ -13,7 +13,7 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
   <el-tabs type="border-card" v-loading.fullscreen.lock="fullscreenLoading">
     <el-tab-pane>
       <span slot="label"><i class="el-icon-setting"></i> 設定 (Basic Settings)</span>
-      <el-form :model="settingForm" :rules="rules" ref="settingForm" label-width="100px" >
+      <el-form :model="settingForm" :rules="rules" ref="settingForm" label-width="200px" >
         <el-form-item label="AppID" prop="AppID">
           <el-input v-model="settingForm.AppID"></el-input>
         </el-form-item>
@@ -30,6 +30,9 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
             active-text="國內微信號">
           </el-switch>
         </el-form-item>
+        <el-form-item label="粉絲傳訊時,自動回覆訊息內容" prop="Welcome">
+          <el-input v-model="settingForm.Welcome"></el-input>
+        </el-form-item>        
         <el-form-item>
           <el-button type="primary" @click="submitForm('settingForm')">存檔</el-button>
           <el-button @click="resetForm('settingForm')">重置</el-button>
@@ -57,7 +60,8 @@ jQuery(document).ready(function ($) {
           AppID: '',
           AppSecret: '',
           Token: '',
-          IsDomestic: true,                  
+          IsDomestic: true,
+          Welcome:'',                  
         },
         rules: {
           AppID: [
@@ -78,6 +82,7 @@ jQuery(document).ready(function ($) {
       this.settingForm.AppSecret='<?php echo get_option( 'wpwx_AppSecret'); ?>';
       this.settingForm.Token='<?php echo get_option( 'wpwx_Token'); ?>';
       this.settingForm.IsDomestic=<?php echo get_option( 'wpwx_IsDomestic')=='true'?'true':'false'; ?>;
+      this.settingForm.Welcome='<?php echo get_option( 'wpwx_Welcome'); ?>';
     },
     methods: {
       submitForm(formName) {
@@ -94,6 +99,7 @@ jQuery(document).ready(function ($) {
                         'AppSecret': this.settingForm.AppSecret,
                         'Token': this.settingForm.Token,
                         'IsDomestic': this.settingForm.IsDomestic,
+                        'Welcome': this.settingForm.Welcome,
                         'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
             };
             $.post(ajaxurl, data, function (response) {
