@@ -6,23 +6,23 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 
 <div id="app">
   <div class="wrap">
-
-    <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect" style="width: 50%">
-      <el-menu-item index="1">处理中心</el-menu-item>
-      <el-submenu index="2">
-        <template slot="title">我的工作台</template>
-        <el-menu-item index="2-1">选项1</el-menu-item>
-        <el-menu-item index="2-2">选项2</el-menu-item>
-        <el-menu-item index="2-3">选项3</el-menu-item>
-        <el-submenu index="2-4">
-          <template slot="title">选项4</template>
-          <el-menu-item index="2-4-1">选项1</el-menu-item>
-          <el-menu-item index="2-4-2">选项2</el-menu-item>
-          <el-menu-item index="2-4-3">选项3</el-menu-item>
-        </el-submenu>
-      </el-submenu>
-      <el-menu-item index="3" disabled>消息中心</el-menu-item>
-      <el-menu-item index="4"><a href="https://www.ele.me" target="_blank">订单管理</a></el-menu-item>
+    <el-button type="primary" @click="menuType='create';createWxMenu()" type="text" size="small">建立Menu</el-button>
+    <el-button type="warning" @click="menuType='delete';deleteWxMenu()" type="text" size="small">清除Menu</el-button>
+    <el-menu :default-active="activeIndex" mode="horizontal" @select="handleSelect" style="width: 50%" >
+      <template v-for="item in menu" :index="item.id" >
+          <template v-if=item.sub>
+            <el-submenu :index="item.id">            
+              <template slot="title"><span v-text="item.name"></span></template>
+              <el-menu-item-group  v-for="sub in item.sub" :key="sub.id">
+                <el-menu-item :index="sub.id"> <a :href="sub.link" target="_blank"><span v-text="sub.name"></span> </a>
+                </el-menu-item>
+              </el-menu-item-group>
+            </el-submenu>
+          </template>
+          <template v-else>          
+            <el-menu-item :index="item.id"><a :href="item.link" target="_blank"><span v-text="item.name"></span> </a></el-menu-item>
+          </template>
+        </template>
     </el-menu>
 
   </div>
@@ -31,15 +31,69 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
 <script>
 jQuery(document).ready(function ($) {
 
-  var Main = {
+  var Main = {    
     data() {
+      //console.log('data');
       return {
-        activeIndex: '1'
+        activeIndex: '1',
+        menuType: 'delete',
+        termName: 'wx_menu',
+        menu: '',
       };
+    },
+    mounted() {
+      //console.log('mounted');
+      this.menu = <?php list($vueMenu,$wxMenu)=get_terms_hierarchicaly('wx_menu'); echo json_encode($vueMenu); ?>
     },
     methods: {
       handleSelect(key, keyPath) {
         console.log(key, keyPath);
+      },
+      createWxMenu(){
+        this.$confirm('確認依顯示建立Menu', '提示', {
+            confirmButtonText: '確定',
+            cancelButtonText: '取消',
+          }).then(({ value }) => {            
+            var data = {
+                          'action': 'wpwx_ajax_ewcWxMenu_action',
+                          'menuType': this.menuType,
+                          'termName': this.termName,                      
+                          'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
+              };
+              $.post(ajaxurl, data, function (response) {                
+                  alert('Send success!!' );                 
+              })
+              .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+          }).catch(() => {
+            this.$message({
+              type: 'warning',
+              message: '取消建立Menu'
+            });       
+          });
+      },
+      deleteWxMenu(){
+
+        this.$confirm('確認要清除Menu', '提示', {
+            confirmButtonText: '確定',
+            cancelButtonText: '取消',
+          }).then(({ value }) => {            
+            var data = {
+                          'action': 'wpwx_ajax_ewcWxMenu_action',
+                          'menuType': this.menuType,
+                          'termName': this.termName,                       
+                          'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
+              };
+              $.post(ajaxurl, data, function (response) {                
+                  alert('Send success!!' );                 
+              })
+              .error(function(response) { alert("Oops! Sorry error occurred! Internet issue."); });
+          }).catch(() => {
+            this.$message({
+              type: 'warning',
+              message: '取消清除Menu'
+            });       
+          });
+
       }
     }
   }

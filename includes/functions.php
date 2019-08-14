@@ -587,6 +587,118 @@ function wpwx_ajax_ewcSendMessage_action(){
 
 }
 
+// 建立&刪除 微信菜單
+add_action( 'wp_ajax_wpwx_ajax_ewcWxMenu_action', 'wpwx_ajax_ewcWxMenu_action' );
+function wpwx_ajax_ewcWxMenu_action(){
+    global $wpdb; // this is how you get access to the database
+    global $app;  // EasyWeChat app
+
+    $nonce = $_POST['nonce'];
+    $menuType = $_POST['menuType'];
+    $termName = $_POST['termName'];
+
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
+
+        if ($menuType=='delete'){
+            $result = $app->menu->delete(); // 全部刪除
+        }
+        if ($menuType=='create'){            
+            list($vueMenu,$wxMenu)=get_terms_hierarchicaly($termName);
+            $app->menu->create($wxMenu);
+        }
+
+        wp_send_json_success( array('code' => 200, 'result' => $result, 'wxMenu'=> $wxMenu  ) );        
+        echo 0;
+    } else {
+        wp_send_json_error(array('code' => 500, 'data' => $_POST, 'msg' => '錯誤的請求'));
+        echo - 1;
+    }
+
+    wp_die(); // this is required to terminate immediately and return a proper response
+}
+
+/**
+ * Recursively sort an array of taxonomy terms hierarchically. Child categories will be
+ * placed under a 'children' member of their parent term.
+ * @param Array   $cats     taxonomy term objects to sort
+ * @param Array   $into     result array to put them in
+ * @param integer $parentId the current parent ID to put them in
+ */
+function sort_terms_hierarchicaly(Array &$cats, Array &$into, $parentId = 0)
+{
+    foreach ($cats as $i => $cat) {
+        if ($cat->parent == $parentId) {
+            $into[$cat->term_id] = $cat;
+            unset($cats[$i]);
+        }
+    }
+
+    foreach ($into as $topCat) {
+        $topCat->children = array();
+        sort_terms_hierarchicaly($cats, $topCat->children, $topCat->term_id);
+    }
+}
+function get_terms_hierarchicaly($termName){
+    $categories = get_terms( 'category', array('hide_empty' => 0 ) );    
+    $categoryHierarchy = array();
+    sort_terms_hierarchicaly($categories, $categoryHierarchy);
+    
+    $vue_menu = array(); // For 管理介面:微信選單設定
+    $wx_menu = array();  // For 傳送到微信建立Menu
+    foreach ($categoryHierarchy as $root_menu) {
+        if ($root_menu->name == $termName ) {
+            $i = 0;            
+            foreach ($root_menu->children as $first_level) {
+                                
+                $vue_menu[$i]['id']= "$first_level->term_id";
+                $vue_menu[$i]['name']= $first_level->name;
+
+                $wx_menu[$i]['name']= $first_level->name;               
+                if(count($first_level->children)>0){
+                    $j = 0;
+                    $sub_menu = array();
+                    $wx_subMenu = array();
+                    foreach ($first_level->children as $sub) {
+                        $sub_menu[$j]['id'] =  "$sub->term_id";
+                        $sub_menu[$j]['name'] =  $sub->name;
+                        // Get the ID of a given category
+                        $category_id = get_cat_ID( $sub->name );
+                        // Get the URL of this category
+                        $category_link = get_category_link( $category_id );
+                        $sub_menu[$j]['link'] = $category_link;
+
+                        $wx_subMenu[$j]['name'] =  $sub->name;
+                        $wx_subMenu[$j]['type']= "view";
+                        $wx_subMenu[$j]['url'] = $category_link;
+                        $j++;
+                    }
+                    $vue_menu[$i]['sub']= $sub_menu;
+                    $wx_menu[$i]['sub_button']= $wx_subMenu;
+
+                } else {
+                    // Get the ID of a given category
+                    $category_id = get_cat_ID( $first_level->name );
+                    // Get the URL of this category
+                    $category_link = get_category_link( $category_id );
+                    $vue_menu[$i]['link'] = $category_link;
+
+                    $wx_menu[$i]['type']= "view";
+                    $wx_menu[$i]['url']= $category_link;
+
+                }
+                $i++;
+            }
+        }
+        
+    }
+
+    return array($vue_menu, $wx_menu);
+    //echo json_encode($vue_menu);
+    //var_dump($vue_menu);
+    //var_dump($categoryHierarchy);
+}
+
+
 /**
  * Ajax Example
  */
