@@ -23,6 +23,9 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         <el-form-item label="Token" prop="Token">
           <el-input v-model="settingForm.Token"></el-input>
         </el-form-item>
+        <el-form-item label="AesKey" prop="AesKey">
+          <el-input v-model="settingForm.AesKey"></el-input>
+        </el-form-item>
         <el-form-item label="IsDomestic" prop="IsDomestic">
           <el-switch
             v-model="settingForm.IsDomestic"
@@ -60,6 +63,7 @@ jQuery(document).ready(function ($) {
           AppID: '',
           AppSecret: '',
           Token: '',
+          AesKey: '',
           IsDomestic: true,
           Welcome:'',                  
         },
@@ -81,6 +85,7 @@ jQuery(document).ready(function ($) {
       this.settingForm.AppID='<?php echo get_option( 'wpwx_AppID'); ?>';
       this.settingForm.AppSecret='<?php echo get_option( 'wpwx_AppSecret'); ?>';
       this.settingForm.Token='<?php echo get_option( 'wpwx_Token'); ?>';
+      this.settingForm.AesKey='<?php echo get_option( 'wpwx_AesKey'); ?>';
       this.settingForm.IsDomestic=<?php echo get_option( 'wpwx_IsDomestic')=='true'?'true':'false'; ?>;
       this.settingForm.Welcome='<?php echo get_option( 'wpwx_Welcome'); ?>';
     },
@@ -98,6 +103,7 @@ jQuery(document).ready(function ($) {
                         'AppID': this.settingForm.AppID, 
                         'AppSecret': this.settingForm.AppSecret,
                         'Token': this.settingForm.Token,
+                        'AesKey': this.settingForm.AesKey,
                         'IsDomestic': this.settingForm.IsDomestic,
                         'Welcome': this.settingForm.Welcome,
                         'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'

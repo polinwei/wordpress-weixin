@@ -7,7 +7,7 @@ return [
     'app_id'  => get_option( 'wpwx_AppID'),         // AppID
     'secret'  => get_option( 'wpwx_AppSecret'),     // AppSecret
     'token'   => get_option( 'wpwx_Token'),          // Token
-    'aes_key' => '',                    // EncodingAESKey，兼容与安全模式下请一定要填写！！！
+    'aes_key' => get_option( 'wpwx_AesKey'),                    // EncodingAESKey，兼容与安全模式下请一定要填写！！！
 
      /**
       * 指定 API 调用返回结果的类型：array(default)/collection/object/raw/自定义类名
