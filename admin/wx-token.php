@@ -7,7 +7,28 @@ include_once $path . '/wp-config.php';
 include_once $path . '/wp-load.php';
 include_once $path . '/wp-includes/wp-db.php';
 include_once $path . '/wp-includes/pluggable.php';
-global $wpdb;
+
+define( 'WPWX_PLUGIN', __FILE__ );
+define( 'WPWX_PLUGIN_BASENAME', plugin_basename( WPWX_PLUGIN ));
+define( 'WPWX_PLUGIN_NAME',	trim( dirname( WPWX_PLUGIN_BASENAME ), '/' ) );
+define( 'WPWX_PLUGIN_DIR', untrailingslashit( dirname( WPWX_PLUGIN ) ) );
+define( 'APP_ROOT_DIR', substr(WPWX_PLUGIN,0,stripos(WPWX_PLUGIN,"wp-content")-1) );
+
+require_once WPWX_PLUGIN_DIR . '/vendor/autoload.php';
+use EasyWeChat\Factory;
+
+$ewcConfig= (include WPWX_PLUGIN_DIR . '/includes/EasyWeChat-config.php');
+$app= Factory::officialAccount($ewcConfig);
+$server = $app->server;
+
+$app->server->push(function ($message) {
+  return get_option( 'wpwx_Welcome');
+});
+$response = $app->server->serve();
+$response->send(); exit;
+
+/**
+ *   改用 EasyWeChat 來回應
 
 // 由微信平台自已設定的 token 值
 $token     = get_option( 'wpwx_Token');
@@ -32,6 +53,6 @@ if( $tmpStr == $signature ){
   wp_redirect(home_url());
 }
 exit();
+ */
 
-//$posts = $wpdb->get_results("SELECT ID, post_title FROM $wpdb->posts WHERE post_status = 'publish' AND post_type='post'");
 ?>   

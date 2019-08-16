@@ -268,24 +268,14 @@ function wpwx_ajax_setting_action() {
         delete_option( 'wpwx_AppSecret' );
         delete_option( 'wpwx_Token' );
         delete_option( 'wpwx_IsDomestic' );
+        delete_option( 'wpwx_Welcome' );
         add_option( 'wpwx_AppID', $AppID );
         add_option( 'wpwx_AppSecret', $AppSecret );
         add_option( 'wpwx_Token', $Token );
         add_option( 'wpwx_IsDomestic', $IsDomestic );
-        if (empty($Welcome)) {
-            delete_option( 'wpwx_Welcome' );
-            $app->server->push(function ($message) {
-                return null;
-            });
-        } else {
-            add_option( 'wpwx_Welcome', $Welcome );
-            $app->server->push(function ($message) {               
-                return $Welcome;
-            });                        
-        }
-        $response = $app->server->serve();  
+        add_option( 'wpwx_Welcome', $Welcome );
         
-        wp_send_json_success(array('code' => 200, 'data' => $_POST, 'response' => $response ));      
+        wp_send_json_success(array('code' => 200, 'data' => $_POST ));      
         echo 0;
     } else {
         wp_send_json_error(array('code' => 500, 'data' => '', 'msg' => '錯誤的請求'));
