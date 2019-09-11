@@ -89,6 +89,7 @@ function wpwx_admin_media_page(){
 
 function wpwx_admin_menu_page(){
   include("menu-page.php");
+  get_menu_hierarchicaly($termName);
 }
 
 define( 'MY_AJAX_EXAMPLE_ACTION_NONCE', 'my-ajax-example-action-' );

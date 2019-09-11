@@ -44,7 +44,7 @@ jQuery(document).ready(function ($) {
     },
     mounted() {
       //console.log('mounted');
-      this.menu = <?php list($vueMenu,$wxMenu)=get_terms_hierarchicaly('wx_menu'); echo json_encode($vueMenu); ?>
+      this.menu = <?php $vueMenu=get_menu_hierarchicaly('wx_menu'); echo json_encode($vueMenu); ?>
     },
     methods: {
       handleSelect(key, keyPath) {

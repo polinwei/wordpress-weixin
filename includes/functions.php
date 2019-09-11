@@ -643,11 +643,13 @@ function sort_terms_hierarchicaly(Array &$cats, Array &$into, $parentId = 0)
         sort_terms_hierarchicaly($cats, $topCat->children, $topCat->term_id);
     }
 }
+/**
+ * 使用文章的類別來作微信的菜單
+ */
 function get_terms_hierarchicaly($termName){
     $categories = get_terms( 'category', array('hide_empty' => 0 ) );    
     $categoryHierarchy = array();
-    sort_terms_hierarchicaly($categories, $categoryHierarchy);
-    
+    sort_terms_hierarchicaly($categories, $categoryHierarchy);    
     $vue_menu = array(); // For 管理介面:微信選單設定
     $wx_menu = array();  // For 傳送到微信建立Menu
     foreach ($categoryHierarchy as $root_menu) {
@@ -696,13 +698,51 @@ function get_terms_hierarchicaly($termName){
         }
         
     }
-
     return array($vue_menu, $wx_menu);
-    //echo json_encode($vue_menu);
-    //var_dump($vue_menu);
-    //var_dump($categoryHierarchy);
 }
 
+/**
+ * Recursively sort an array of taxonomy terms hierarchically. Child categories will be
+ * placed under a 'children' member of their parent term.
+ * @param Array   $cats     wp_get_nav_menu_items('選單名稱') 
+ * @param Array   $into     result array to put them in
+ * @param text    $parentField Point to the current parent ID to put them in
+ * @param text    $parentKeyField the current parent field to put them in
+ * @param text    $childrenName which name will put children in its
+ * @param integer $parentId the current parent ID to put them in
+ */
+function sort_menus_hierarchicaly(Array &$cats, Array &$into, $parentField, $parentKeyField, $childrenName, $parentId = 0)
+{
+    $x=0;
+    foreach ($cats as $i => $cat) {
+        if ($cat->$parentField == $parentId) {
+            $cat->id = "$cat->ID";
+            $cat->name = $cat->title;
+            $cat->type = "view";
+            $cat->link = $cat->url;
+            $into[$x]=$cat;
+            $x++;                            
+        }
+    }
+    foreach ($into as $i=>$topCat) {        
+        $topCat->$childrenName = array();
+        sort_menus_hierarchicaly($cats, $topCat->$childrenName, $parentField, $parentKeyField, $childrenName, $topCat->$parentKeyField );
+    }
+}
+
+/**
+ * 使用選單來作微信的菜單
+ */
+function get_menu_hierarchicaly($termName){
+    $wp_menu = wp_get_nav_menu_items( "wx_menu" );
+    $result = array();    
+    //var_dump($wp_menu);
+    sort_menus_hierarchicaly($wp_menu,$result,'menu_item_parent',"ID", 'sub' );  
+    //var_dump($result); 
+    return $result;
+    
+
+}
 
 /**
  * Ajax Example
