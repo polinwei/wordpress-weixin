@@ -608,11 +608,12 @@ function wpwx_ajax_ewcWxMenu_action(){
             $result = $app->menu->delete(); // 全部刪除
         }
         if ($menuType=='create'){            
-            list($vueMenu,$wxMenu)=get_terms_hierarchicaly($termName);
-            $app->menu->create($wxMenu);
+            //list($vueMenu,$wxMenu)=get_terms_hierarchicaly($termName);
+            $xMenu=get_menu_hierarchicaly('wx_menu','sub_button');
+            $result = $app->menu->create($xMenu);
         }
 
-        wp_send_json_success( array('code' => 200, 'result' => $result, 'wxMenu'=> $wxMenu  ) );        
+        wp_send_json_success( array('code' => 200, 'result' => $result, 'xMenu'=>$xMenu  ) );        
         echo 0;
     } else {
         wp_send_json_error(array('code' => 500, 'data' => $_POST, 'msg' => '錯誤的請求'));
@@ -733,15 +734,11 @@ function sort_menus_hierarchicaly(Array &$cats, Array &$into, $parentField, $par
 /**
  * 使用選單來作微信的菜單
  */
-function get_menu_hierarchicaly($termName){
+function get_menu_hierarchicaly($termName, $subName){
     $wp_menu = wp_get_nav_menu_items( "wx_menu" );
-    $result = array();    
-    //var_dump($wp_menu);
-    sort_menus_hierarchicaly($wp_menu,$result,'menu_item_parent',"ID", 'sub' );  
-    //var_dump($result); 
+    $result = array();
+    sort_menus_hierarchicaly($wp_menu,$result,'menu_item_parent',"ID", $subName );
     return $result;
-    
-
 }
 
 /**
