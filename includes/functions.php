@@ -259,7 +259,8 @@ function wpwx_ajax_setting_action() {
     $AppID      = $_POST['AppID'];
     $AppSecret  = $_POST['AppSecret'];
     $Token      = $_POST['Token'];
-    $AesKey      = $_POST['AesKey'];
+    $AesKey     = $_POST['AesKey'];
+    $wxMenuInWP = $_POST['wxMenuInWP'];
     $IsDomestic = $_POST['IsDomestic'];
     $Welcome    = $_POST['Welcome'];
     $nonce      = $_POST['nonce'];    
@@ -269,12 +270,14 @@ function wpwx_ajax_setting_action() {
         delete_option( 'wpwx_AppSecret' );
         delete_option( 'wpwx_Token' );
         delete_option( 'wpwx_AesKey' );
+        delete_option( 'wpwx_wxMenuInWP' );
         delete_option( 'wpwx_IsDomestic' );
         delete_option( 'wpwx_Welcome' );
         add_option( 'wpwx_AppID', $AppID );
         add_option( 'wpwx_AppSecret', $AppSecret );
         add_option( 'wpwx_Token', $Token );
         add_option( 'wpwx_AesKey',$AesKey );
+        add_option( 'wpwx_wxMenuInWP',$wxMenuInWP );
         add_option( 'wpwx_IsDomestic', $IsDomestic );
         add_option( 'wpwx_Welcome', $Welcome );
         

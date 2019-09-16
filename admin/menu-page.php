@@ -39,12 +39,12 @@ jQuery(document).ready(function ($) {
         activeIndex: '1',
         menuType: 'delete',
         termName: 'wx_menu',
-        menu: '',
+        menu: '',        
       };
     },
     mounted() {
-      //console.log('mounted');
-      this.menu = <?php $vueMenu=get_menu_hierarchicaly('wx_menu','sub'); echo json_encode($vueMenu); ?>
+      //console.log('mounted');      
+      this.menu = <?php $vueMenu=get_menu_hierarchicaly(get_option( 'wpwx_wxMenuInWP'),'sub'); echo json_encode($vueMenu); ?>
     },
     methods: {
       handleSelect(key, keyPath) {

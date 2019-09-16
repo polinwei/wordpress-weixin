@@ -26,6 +26,9 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         <el-form-item label="AesKey" prop="AesKey">
           <el-input v-model="settingForm.AesKey"></el-input>
         </el-form-item>
+        <el-form-item label="微信菜單在 WP 的選單名稱" prop="wxMenuInWP">
+          <el-input v-model="settingForm.wxMenuInWP"></el-input>
+        </el-form-item>
         <el-form-item label="IsDomestic" prop="IsDomestic">
           <el-switch
             v-model="settingForm.IsDomestic"
@@ -65,7 +68,8 @@ jQuery(document).ready(function ($) {
           Token: '',
           AesKey: '',
           IsDomestic: true,
-          Welcome:'',                  
+          Welcome:'',
+          wxMenuInWP: '',                  
         },
         rules: {
           AppID: [
@@ -88,6 +92,7 @@ jQuery(document).ready(function ($) {
       this.settingForm.AesKey='<?php echo get_option( 'wpwx_AesKey'); ?>';
       this.settingForm.IsDomestic=<?php echo get_option( 'wpwx_IsDomestic')=='true'?'true':'false'; ?>;
       this.settingForm.Welcome='<?php echo get_option( 'wpwx_Welcome'); ?>';
+      this.settingForm.wxMenuInWP='<?php echo get_option( 'wpwx_wxMenuInWP'); ?>';
     },
     methods: {
       submitForm(formName) {
@@ -104,6 +109,7 @@ jQuery(document).ready(function ($) {
                         'AppSecret': this.settingForm.AppSecret,
                         'Token': this.settingForm.Token,
                         'AesKey': this.settingForm.AesKey,
+                        'wxMenuInWP': this.settingForm.wxMenuInWP,
                         'IsDomestic': this.settingForm.IsDomestic,
                         'Welcome': this.settingForm.Welcome,
                         'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
