@@ -42,8 +42,9 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
         <el-form-item>
           <el-button type="primary" @click="submitForm('settingForm')">存檔</el-button>
           <el-button @click="resetForm('settingForm')">重置</el-button>
-          <el-button type="primary" @click="syncWx">同步微信</el-button>
-          <el-button type="danger" @click="delMedia">刪除微信素材</el-button>                    
+          <el-button type="primary" @click="syncWx">同步微信素材</el-button>          
+          <el-button type="danger" @click="delMedia">刪除微信素材</el-button>
+          <el-button type="primary" @click="syncWxOpenIDs">同步微信粉絲</el-button>                    
         </el-form-item>
       </el-form>      
     </el-tab-pane>
@@ -135,6 +136,20 @@ jQuery(document).ready(function ($) {
         this.fullscreenLoading = true;
         var data = {
                       'action': 'wpwx_ajax_syncwx_action',
+                      'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
+          };
+          $.post(ajaxurl, data, function (response) {
+              vueSetting.fullscreenLoading = false;                
+              alert('Synchronize Success!!' );                
+          })
+          .error(function(response) { vueSetting.fullscreenLoading = false; alert("Oops! Sorry error occurred! Internet issue."); });
+      },
+      syncWxOpenIDs(){
+        console.log('syncWxOpenIDs');
+        // 傳送資料時, 禁止使用者再按其它按鍵        
+        this.fullscreenLoading = true;
+        var data = {
+                      'action': 'wpwx_ajax_syncwx_openids_action',
                       'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
           };
           $.post(ajaxurl, data, function (response) {

@@ -352,7 +352,7 @@ function wpwx_ajax_delOneMedia_action() {
     wp_die(); // this is required to terminate immediately and return a proper response
 }
 
-// 同步微信上的粉絲與素材
+// 同步微信上的素材
 add_action( 'wp_ajax_wpwx_ajax_syncwx_action', 'wpwx_ajax_syncwx_action' );
 function wpwx_ajax_syncwx_action() {
     global $wpdb; // this is how you get access to the database
@@ -363,6 +363,26 @@ function wpwx_ajax_syncwx_action() {
     $nonce = $_POST['nonce'];
     if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
         $mediaTotal = getAllMedias();
+        //$userTotal = getAllOpenids();
+        wp_send_json_success(array('code' => 200 ,'data' =>"{ 'mediaTotal':$mediaTotal, 'userTotal':$userTotal }" , 'msg' => '微信素材與粉絲同步完成' ));
+    } else {
+        wp_send_json_error(array('code' => 500, 'data' => $_POST, 'msg' => '錯誤的請求'));
+        echo - 1;
+    }
+    wp_die(); // this is required to terminate immediately and return a proper response 
+
+}
+// 同步微信上的粉絲
+add_action( 'wp_ajax_wpwx_ajax_syncwx_openids_action', 'wpwx_ajax_syncwx_openids_action' );
+function wpwx_ajax_syncwx_openids_action() {
+    global $wpdb; // this is how you get access to the database
+    global $app;  // EasyWeChat app
+
+    $mediaTotal = 0 ;
+    $userTotal = 0;
+    $nonce = $_POST['nonce'];
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
+        //$mediaTotal = getAllMedias();
         $userTotal = getAllOpenids();
         wp_send_json_success(array('code' => 200 ,'data' =>"{ 'mediaTotal':$mediaTotal, 'userTotal':$userTotal }" , 'msg' => '微信素材與粉絲同步完成' ));
     } else {
