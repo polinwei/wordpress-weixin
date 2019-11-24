@@ -801,8 +801,8 @@ function ewcSendNews($openid=''){
         new NewsItem([
             'title'       => '網站第一篇文章',
             'description' => '歡迎使用 WordPress。這是這個網站的第一篇文章，試試為這篇文章進行編輯或直接刪除，然後開始撰寫新文章！',
-            'url'         => 'http://im.globeunion.com/2019/06/19/hello-world/',
-            'image'       => 'http://im.globeunion.com/wp-content/uploads/2019/06/city-street-1246870_640.jpg',
+            'url'         => 'http://yourwebsite.com/2019/06/19/hello-world/',
+            'image'       => 'http://yourwebsite.com/wp-content/uploads/2019/06/city-street-1246870_640.jpg',
         ]),
     ];
     $news = new News($items);
