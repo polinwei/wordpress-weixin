@@ -19,3 +19,7 @@ Document: https://www.kancloud.cn/zoujingli/wechat-developer/518672
 composer require overtrue/wechat:~4.0 -vvv
 github: https://github.com/overtrue/wechat
 Document: https://www.easywechat.com/docs
+
+#完整的介紹與安裝
+WordPress Customize Plugin – 微信插件介紹與安裝
+https://polinwei.com/wordpress-customize-plugin-wordpress-weixin-install-guide/
