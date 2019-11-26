@@ -131,8 +131,9 @@ var Main = {
     methods: {
       review(row) {    
         //console.log(row);
-        this.$alert(row.post_content, row.post_title, {
-          dangerouslyUseHTMLString: true
+        var content = row.post_content.substr(0,300);        
+        this.$alert(content, row.post_title, {
+          dangerouslyUseHTMLString: true,
         });
       },
       handleCloseDialog(done) {
