@@ -12,12 +12,12 @@ URL: https://getcomposer.org/download/
 #安裝 WeChatDeveloper  
 **composer require zoujingli/wechat-developer**  
 
-github: https://github.com/zoujingli/WeChatDeveloper
+github: https://github.com/zoujingli/WeChatDeveloper  
 Document: https://www.kancloud.cn/zoujingli/wechat-developer/518672
 
 #安裝 EasyWeChat  
 **composer require overtrue/wechat:~4.0 -vvv**  
-github: https://github.com/overtrue/wechat
+github: https://github.com/overtrue/wechat  
 Document: https://www.easywechat.com/docs
 
 #完整的介紹與安裝  
