@@ -27,5 +27,5 @@ https://polinwei.com/wordpress-customize-plugin-wordpress-weixin-install-guide/
 Donate 贊助
 **paypal.me/polinwei**  
 https://paypal.me/polinwei?locale.x=zh_TW  
-![image](https://github.com/polinwei/wordpress-weixin/row/master/images/weixin_pay_donate_polinwei_20191127164349.jpg)
+![image](https://github.com/polinwei/wordpress-weixin/blob/master/images/weixin_pay_donate_polinwei.jpg)
  
