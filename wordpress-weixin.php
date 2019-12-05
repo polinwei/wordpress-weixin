@@ -40,10 +40,13 @@ $app= Factory::officialAccount($ewcConfig);
 $server = $app->server;
 $user = $app->user;
 
+/** 啟用外掛時，呼叫 functions.php 裡的 wpwx_install 函數建立 table */
 require_once WPWX_PLUGIN_DIR . '/includes/functions.php';
 register_activation_hook( __FILE__, 'wpwx_install' );
-//register_activation_hook( __FILE__, 'wpwx_install_data' );
-
+// 啟用外掛時, 激活一個事件: wpwx_activation, functions.php 裡要有 wpwx_activation 函數
+register_activation_hook( __FILE__, 'wpwx_activation' );
+// 停用外掛時, 移除一個事件: wpwx_deactivation, functions.php 裡要有 wpwx_deactivation 函數
+register_deactivation_hook( __FILE__, 'wpwx_deactivation' );
 
 
 if ( is_admin() ) {

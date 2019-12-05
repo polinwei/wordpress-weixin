@@ -50,7 +50,28 @@ require_once WPWX_PLUGIN_DIR . '/includes/vue-header.php';
     </el-tab-pane>
     <el-tab-pane>
       <span slot="label"><i class="el-icon-alarm-clock"></i> 排程 (Schedule Settings)</span>
-      定時任務    
+      <el-form :model="scheduleForm" ref="scheduleForm" label-width="200px" >
+        定時任務
+        <el-form-item label="同步微信粉絲: " prop="scheduleFlag">
+          <el-switch v-model="scheduleForm.scheduleFlag"
+            inactive-text="停止排程"
+            active-text="開啟排程">
+          </el-switch>
+          </el-form-item>
+        <el-form-item label="每幾小時同步一次: " prop="scheduleTime">
+          <el-time-select v-model="scheduleForm.scheduleTime"
+              :picker-options="{
+                start: '01:00',
+                step: '01:00',
+                end: '24:00'
+              }"
+            placeholder="選擇時間">
+          </el-time-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitScheduleForm('scheduleForm')">存檔</el-button>
+        </el-form-item>
+      </el-form>   
     </el-tab-pane>
   </el-tabs>
 </div>
@@ -71,6 +92,10 @@ jQuery(document).ready(function ($) {
           IsDomestic: true,
           Welcome:'',
           wxMenuInWP: '',                  
+        },
+        scheduleForm:{
+          scheduleFlag: false,
+          scheduleTime: '',
         },
         rules: {
           AppID: [
@@ -94,6 +119,9 @@ jQuery(document).ready(function ($) {
       this.settingForm.IsDomestic=<?php echo get_option( 'wpwx_IsDomestic')=='true'?'true':'false'; ?>;
       this.settingForm.Welcome='<?php echo get_option( 'wpwx_Welcome'); ?>';
       this.settingForm.wxMenuInWP='<?php echo get_option( 'wpwx_wxMenuInWP'); ?>';
+
+      this.scheduleForm.scheduleFlag=<?php echo get_option( 'wpwx_scheduleFlag')=='true'?'true':'false'; ?>;
+      this.scheduleForm.scheduleTime='<?php echo get_option( 'wpwx_scheduleTime'); ?>';
     },
     methods: {
       submitForm(formName) {
@@ -129,6 +157,30 @@ jQuery(document).ready(function ($) {
       },
       resetForm(formName) {
         this.$refs[formName].resetFields();
+      },
+      submitScheduleForm(formName){
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            /* 送出Post */
+            // 傳送資料時, 禁止使用者再按其它按鍵        
+            this.fullscreenLoading = true;
+            var data = {
+                        'action': 'wpwx_ajax_setting_schedule_action',
+                        'scheduleFlag': this.scheduleForm.scheduleFlag,
+                        'scheduleTime': this.scheduleForm.scheduleTime,
+                        'nonce': '<?php echo wp_create_nonce(WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ); ?>'
+            };
+            $.post(ajaxurl, data, function (response) {
+                vueSetting.fullscreenLoading = false;                
+                alert('Send success!!' );                 
+            })
+            .error(function(response) { vueSetting.fullscreenLoading = false; alert("Oops! Sorry error occurred! Internet issue."); });
+             
+          } else {
+            console.log('error submit!!');
+            return false;
+          }
+        });
       },
       syncWx(){
         console.log('syncWx');

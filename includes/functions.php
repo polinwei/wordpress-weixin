@@ -214,7 +214,8 @@ function getAllPost(){
                 ) AS 'Tags'
               FROM  ".$wpdb->prefix ."posts
               WHERE post_type = 'post' 
-              AND post_status = 'publish' ";
+              AND post_status = 'publish' 
+              ORDER BY post_date DESC";
     if ( $wp_roles->roles[ $user_role ]['name'] == 'Author' ){        
         $query .= " AND post_author='$current_user->ID' ";
     }
@@ -289,6 +290,7 @@ function wpwx_ajax_setting_action() {
     }
     wp_die(); // this is required to terminate immediately and return a proper response
 }
+
 
 // 刪除微信上所有的素材
 add_action( 'wp_ajax_wpwx_ajax_delMedia_action', 'wpwx_ajax_delMedia_action' );
@@ -763,6 +765,81 @@ function get_menu_hierarchicaly($termName, $subName){
     sort_menus_hierarchicaly($wp_menu,$result,'menu_item_parent',"ID", $subName );
     return $result;
 }
+
+// 設定 wechat 排程參數
+add_action( 'wp_ajax_wpwx_ajax_setting_schedule_action', 'wpwx_ajax_setting_schedule_action' );
+function wpwx_ajax_setting_schedule_action() {
+    global $wpdb,$app; // this is how you get access to the database
+
+    $scheduleFlag      = $_POST['scheduleFlag'];
+    $scheduleTime      = $_POST['scheduleTime'];
+    $nonce             = $_POST['nonce'];    
+    if ( wp_verify_nonce( $nonce, WPWX_AJAX_SETTING_ACTION_NONCE . date('ymdH') ) ) {
+        // 先刪後增加
+        delete_option( 'wpwx_scheduleFlag' );
+        delete_option( 'wpwx_scheduleTime' );
+        add_option( 'wpwx_scheduleFlag', $scheduleFlag );
+        add_option( 'wpwx_scheduleTime', $scheduleTime );
+        $weixin_schedule = false;
+
+        if( $scheduleFlag ) {
+            $weixin_schedule = true;
+            if ( !wp_next_scheduled('wpwx_sync_weixin_event') ) {
+                wp_schedule_event( time(), 'weixin_schedule_time', 'wpwx_sync_weixin_event');
+            }
+        } else {
+            if ($time = wp_next_scheduled('wpwx_sync_weixin_event')) { // 查詢是否有名為 'weixin_schedule_event' 的排程接口
+                wp_unschedule_event($time, 'wpwx_sync_weixin_event');  //抓到下次觸發的時間，然後取消                
+            }
+        }
+
+        wp_send_json_success(array('code' => 200, 'msg' => "{ 'weixin_schedule':$weixin_schedule, 'schedule_name':'weixin_schedule_cron' }"  ));      
+        echo 0;
+    } else {
+        wp_send_json_error(array('code' => 500, 'msg' => '錯誤的請求'));
+        echo - 1;
+    }
+    wp_die(); // this is required to terminate immediately and return a proper response
+}
+
+//激活事件: wpwx_activation 的實作
+function wpwx_activation() {
+    // 先查詢是否已有名為 'wpwx_sync_weixin_event' 的排程, 沒有的話就排定一個
+    if ( !wp_next_scheduled('wpwx_sync_weixin_event') ) {
+        wp_schedule_event( time(), 'weixin_schedule_time', 'wpwx_sync_weixin_event');
+    }
+}
+//注冊 wp_schedule_event() 的接口函數: wpwx_sync_weixin_event
+add_action('wpwx_sync_weixin_event', 'wpwx_sync_weixin_action');
+// 接口函數: wpwx_sync_weixin_event 的實作方法 : wpwx_sync_weixin_action
+function wpwx_sync_weixin_action(){
+    // 抓取微信粉絲資料, 並同步於 table: wpwx_openids    
+    if ( get_option( 'wpwx_scheduleFlag') == 'true' ){
+        getAllOpenids();
+    }     
+}
+//停用事件: wpwx_deactivation 的實作
+function wpwx_deactivation() {
+    wp_clear_scheduled_hook( 'wpwx_sync_weixin_event' );
+}
+
+/**
+ * 客制排程時間: weixin_schedule_time
+ */
+function wpwx_add_cron_schedules($schedules) {
+    $wpwx_scheduleTime = explode(":", get_option( 'wpwx_scheduleTime') );
+    $wpwx_schedule_hour = $wpwx_scheduleTime[0];
+
+    $schedules['weixin_schedule_time'] = array(
+        'interval' => $wpwx_schedule_hour * 3600, // hours in seconds. 
+        'display' => "微信外掛排程: 每 ".$wpwx_schedule_hour." 小時一次",
+    );
+    return $schedules;
+}
+add_filter('cron_schedules', 'wpwx_add_cron_schedules'); //Add a custom cron schedule: wpwx_add_cron_schedules
+
+
+
 
 /**
  * Ajax Example
