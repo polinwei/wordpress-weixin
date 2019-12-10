@@ -214,12 +214,11 @@ function getAllPost(){
                 ) AS 'Tags'
               FROM  ".$wpdb->prefix ."posts
               WHERE post_type = 'post' 
-              AND post_status = 'publish' 
-              ORDER BY post_date DESC";
+              AND post_status = 'publish' ";
     if ( $wp_roles->roles[ $user_role ]['name'] == 'Author' ){        
         $query .= " AND post_author='$current_user->ID' ";
     }
-    $query .= " ORDER BY id,categories,post_date";
+    $query .= " ORDER BY post_date DESC";
     
     $result = $wpdb->get_results($query);
     echo json_encode( $result);
